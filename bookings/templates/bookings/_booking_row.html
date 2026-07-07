@@ -1,0 +1,7 @@
+<tr onclick="location.href='{% url 'bookings:detail' booking.pk %}'">
+  <td class="cell-spot">{{ booking.parking_spot.number }}</td>
+  <td>{{ booking.date|date:'j E Y' }}</td>
+  <td>{{ booking.start_time|time:'H:i' }}–{{ booking.end_time|time:'H:i' }}</td>
+  <td>{{ booking.duration_hours }} ч</td>
+  <td>{% include 'bookings/_status_badge.html' %}</td>
+</tr>
