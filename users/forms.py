@@ -6,7 +6,7 @@ class RegisterForm(UserCreationForm):
 
     class Meta:   
         model = get_user_model()
-        fiels = ('username', 'email', 'password1', 'password2')
+        fields = ('username', 'email', 'password1', 'password2')
     
     def clean_email(self):
         email = self.cleaned_data['email']
@@ -15,4 +15,4 @@ class RegisterForm(UserCreationForm):
             raise forms.ValidationError('Пользователь с таким именем уже существует.')
         
         return email
-    pass
+
