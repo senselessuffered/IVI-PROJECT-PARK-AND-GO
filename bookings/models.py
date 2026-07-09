@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from spots.models import ParkingSpot
 from django.db import models
 from django.conf import settings
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.db.models import Sum
 from django.core.exceptions import ValidationError
 
@@ -29,6 +29,21 @@ class Booking(models.Model):
         )
         if daily_hours + self.duration_hours > 8:
             raise ValidationError("Суточный лимит превышен!")
+        
+        week_start = self.date + timedelta(days=self.date.weekday())
+        week_end = week_start + timedelta(days=6)
+
+        weekly_hours = (
+            Booking.objects.filter(
+                user=self.user,
+                date__range=(week_start, week_end),
+            )
+            .exclude(status="cancelled")
+            .exclude(pk=self.pk)
+            .aggregate(total=Sum("duration_hours"))["total"] or 0
+        )
+        if weekly_hours + self.duration_hours > 16:
+            raise ValidationError("Недельный лимит превышен!")
 
     def save(self, *args, **kwargs):
         start = datetime.combine(self.date, self.start_time)
