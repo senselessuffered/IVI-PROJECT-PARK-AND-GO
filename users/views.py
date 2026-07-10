@@ -1,6 +1,8 @@
-from django.views.generic import TemplateView
+from django.views.generic import CreateView
+from django.urls import reverse_lazy
+from users.forms import RegisterForm
 
-
-class RegisterView(TemplateView):
-    # TODO PIXELS-010
+class RegisterView(CreateView):
+    form_class = RegisterForm
     template_name = 'users/register.html'
+    success_url = reverse_lazy('users:login')
