@@ -1,7 +1,10 @@
 .limit-hint {
-  font-size: .85rem;
+  font-size: 0.85rem;
   color: var(--pg-muted);
-  background: #f3f4f7;
-  border-radius: 9px;
-  padding: .65rem .85rem;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(var(--pg-blur-sm));
+  -webkit-backdrop-filter: blur(var(--pg-blur-sm));
+  border: 1px solid var(--pg-glass-border-soft);
+  border-radius: var(--pg-radius-sm);
+  padding: 0.65rem 0.9rem;
 }
