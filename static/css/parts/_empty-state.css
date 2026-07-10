@@ -1,0 +1,49 @@
+.glass-card {
+  background: var(--pg-glass-bg);
+  backdrop-filter: blur(var(--pg-blur-lg)) saturate(1.7);
+  -webkit-backdrop-filter: blur(var(--pg-blur-lg)) saturate(1.7);
+  border: 1px solid var(--pg-glass-border);
+  border-radius: var(--pg-radius-lg);
+  padding: 3rem 2rem;
+  box-shadow: var(--pg-shadow-glass);
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeUp var(--pg-dur-slow) var(--pg-ease) forwards;
+  animation-delay: 0.15s;
+}
+
+.empty-state,
+.empty-spots {
+  text-align: center;
+}
+
+.empty-spots {
+  padding: 60px 20px;
+}
+
+.empty-state-icon,
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  display: block;
+  opacity: 0.9;
+  animation: floatIcon 3s ease-in-out infinite;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 18px;
+}
+
+.empty-state-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--pg-ink);
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-text {
+  color: var(--pg-muted);
+  font-size: 0.95rem;
+  margin: 0;
+}

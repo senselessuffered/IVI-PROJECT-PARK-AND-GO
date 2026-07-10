@@ -1,0 +1,46 @@
+.panel {
+  background: var(--pg-glass-bg);
+  backdrop-filter: blur(var(--pg-blur-md)) saturate(1.6);
+  -webkit-backdrop-filter: blur(var(--pg-blur-md)) saturate(1.6);
+  border: 1px solid var(--pg-glass-border);
+  border-radius: var(--pg-radius-lg);
+  box-shadow: var(--pg-shadow-glass);
+}
+
+.panel-pad {
+  padding: 1.4rem 1.5rem;
+}
+
+.detail-list {
+  margin: 0;
+}
+
+.detail-list .row-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--pg-line);
+}
+
+.detail-list .row-item:last-child {
+  border-bottom: 0;
+}
+
+.detail-list .dl-label {
+  color: var(--pg-muted);
+}
+
+.detail-list .dl-value {
+  font-weight: 600;
+  text-align: right;
+}
+
+.detail-spot {
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(180deg, var(--pg-ink), #333c4d);
+  -webkit-background-clip: text;
+  background-clip: text;
+}

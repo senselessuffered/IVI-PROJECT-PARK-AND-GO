@@ -1,0 +1,11 @@
+{% if spot.is_active %}
+<span class="badge-status badge-active">
+    <span class="status-dot status-dot-active"></span>
+    Доступно
+</span>
+{% else %}
+<span class="badge-status badge-cancelled">
+    <span class="status-dot"></span>
+    Недоступно
+</span>
+{% endif %}

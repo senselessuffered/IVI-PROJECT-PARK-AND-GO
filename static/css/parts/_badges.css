@@ -1,0 +1,47 @@
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--pg-radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  width: 110px;
+  backdrop-filter: blur(var(--pg-blur-sm));
+  -webkit-backdrop-filter: blur(var(--pg-blur-sm));
+  border: 1px solid transparent;
+}
+
+.badge-active {
+  background: rgba(29, 143, 75, 0.12);
+  color: #1d8f4b;
+  border-color: rgba(29, 143, 75, 0.16);
+}
+
+.badge-cancelled {
+  background: rgba(185, 58, 58, 0.1);
+  color: #b93a3a;
+  border-color: rgba(185, 58, 58, 0.14);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.status-dot-active {
+  animation: pulseGreen 1.6s infinite;
+}
+
+.status-dot-inactive {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  background: #ef4444;
+  animation: pulseRed 1.6s infinite;
+}

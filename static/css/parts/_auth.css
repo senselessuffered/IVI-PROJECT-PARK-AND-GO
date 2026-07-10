@@ -1,0 +1,19 @@
+.auth-wrap {
+  max-width: 420px;
+  margin-inline: auto;
+}
+
+.auth-wrap .brand-line {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.auth-wrap .panel-pad,
+.auth-wrap .card {
+  background: var(--pg-glass-bg);
+  backdrop-filter: blur(var(--pg-blur-md)) saturate(1.6);
+  -webkit-backdrop-filter: blur(var(--pg-blur-md)) saturate(1.6);
+  border: 1px solid var(--pg-glass-border);
+  border-radius: var(--pg-radius-lg);
+  box-shadow: var(--pg-shadow-glass);
+}

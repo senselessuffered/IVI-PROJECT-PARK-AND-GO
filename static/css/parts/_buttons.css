@@ -1,0 +1,26 @@
+.action-btn {
+  min-width: 120px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--pg-radius-pill);
+}
+
+.action-btn.disabled {
+  cursor: default;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.btn-outline-secondary.action-btn {
+  color: #6b7280;
+  border-color: rgba(28, 34, 48, 0.12);
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(var(--pg-blur-sm));
+  -webkit-backdrop-filter: blur(var(--pg-blur-sm));
+}
+
+.btn-outline-secondary.action-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: #9ca3af;
+}
