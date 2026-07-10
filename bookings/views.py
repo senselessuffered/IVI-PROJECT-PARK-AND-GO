@@ -1,31 +1,32 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import RedirectView, TemplateView
 
 
-class BookingListView(TemplateView):
+class BookingListView(LoginRequiredMixin, TemplateView):
     # TODO PIXELS-012
     template_name = 'bookings/booking_list.html'
 
 
-class BookingDetailView(RedirectView):
+class BookingDetailView(LoginRequiredMixin, RedirectView):
     # TODO PIXELS-013
-    url = '/'
+    url = '/orders/'
 
 
-class BookingCreateView(TemplateView):
+class BookingCreateView(LoginRequiredMixin, TemplateView):
     # TODO PIXELS-014
     template_name = 'bookings/booking_form.html'
 
 
-class BookingUpdateView(TemplateView):
+class BookingUpdateView(LoginRequiredMixin, TemplateView):
     # TODO PIXELS-015
     template_name = 'bookings/booking_form.html'
 
 
-class BookingCancelView(RedirectView):
+class BookingCancelView(LoginRequiredMixin, RedirectView):
     # TODO PIXELS-016
-    url = '/'
+    url = '/orders/'
 
 
-class BookingDeleteView(RedirectView):
+class BookingDeleteView(LoginRequiredMixin, RedirectView):
     # TODO PIXELS-017
-    url = '/'
+    url = '/orders/'

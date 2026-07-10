@@ -3,22 +3,59 @@
 {% block title %}Парковочные места — Парк-и-Гоу{% endblock %}
 
 {% block content %}
-<div class="page-head">
+  <div class="page-head">
     <div>
-        <h1>Парковочные места</h1>
-        <p class="page-sub">Гостевые места вашей компании</p>
+      <h1>Парковочные места</h1>
+      <p class="page-sub">Гостевые места вашей компании</p>
     </div>
-</div>
+  </div>
 
-{% if spots %}
-    {% include 'spots/includes/_free_spots.html' %}
-    {% include 'spots/includes/_spots_table.html' %}
-    {% include 'spots/includes/_spots_cards.html' %}
-{% else %}
-    {% include 'spots/includes/_no_spots.html' %}
-{% endif %}
-{% endblock %}
+  {% if spots %}
+  <div class="panel d-none d-md-block">
+    <table class="table table-bookings align-middle">
+      <thead>
+        <tr>
+          <th>Место</th>
+          <th>Описание</th>
+          <th>Состояние</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for spot in spots %}
+        <tr>
+          <td class="cell-spot"><a href="{% url 'spots:detail' spot.pk %}">{{ spot.number }}</a></td>
+          <td>{{ spot.description|default:'—' }}</td>
+          <td>
+            {% if spot.is_active %}
+            <span class="badge-status badge-active">Активно</span>
+            {% else %}
+            <span class="badge-status badge-cancelled">Отключено</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
-{% block extra_js %}
-    {% include 'spots/includes/_scroll_highlight.html' %}
+  <div class="d-md-none d-flex flex-column gap-3">
+    {% for spot in spots %}
+    <div class="booking-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <a class="bc-spot" href="{% url 'spots:detail' spot.pk %}">{{ spot.number }}</a>
+        {% if spot.is_active %}
+        <span class="badge-status badge-active">Активно</span>
+        {% else %}
+        <span class="badge-status badge-cancelled">Отключено</span>
+        {% endif %}
+      </div>
+      {% if spot.description %}<div class="bc-row"><span class="bc-label">Описание</span><span>{{ spot.description }}</span></div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="panel panel-pad text-center text-muted-2">
+    Парковочные места пока не добавлены.
+  </div>
+  {% endif %}
 {% endblock %}

@@ -31,7 +31,7 @@
 
     <div class="mb-4">
       <label for="{{ form.date.id_for_label }}" class="form-label fw-medium">Дата</label>
-      <input type="date" name="{{ form.date.html_name }}" id="{{ form.date.id_for_label }}" value="{{ form.date.value|default:'' }}" class="form-control{% if form.date.errors %} is-invalid{% endif %}" style="max-width:240px" required>
+      <input type="date" name="{{ form.date.html_name }}" id="{{ form.date.id_for_label }}" value="{{ form.date.value|default:''|stringformat:'s' }}" class="form-control{% if form.date.errors %} is-invalid{% endif %}" style="max-width:240px" required>
       {% for error in form.date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>
 
@@ -67,8 +67,8 @@
       {% for error in form.end_time.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>
 
-    <input type="hidden" name="{{ form.start_time.html_name }}" value="{{ form.start_time.value|default:'' }}">
-    <input type="hidden" name="{{ form.end_time.html_name }}" value="{{ form.end_time.value|default:'' }}">
+    <input type="hidden" name="{{ form.start_time.html_name }}" value="{{ form.start_time.value|default:''|stringformat:'s' }}">
+    <input type="hidden" name="{{ form.end_time.html_name }}" value="{{ form.end_time.value|default:''|stringformat:'s' }}">
 
     <div class="slot-summary mb-3" id="slotSummary"><span class="ss-empty">Время не выбрано</span></div>
 

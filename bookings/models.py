@@ -4,10 +4,11 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from core.models import TimeStampedModel
 from spots.models import ParkingSpot
 
 
-class Booking(models.Model):
+class Booking(TimeStampedModel):
     STATUS_CHOICES = (
         ('active', 'Активна'),
         ('cancelled', 'Отменена'),
@@ -19,7 +20,6 @@ class Booking(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     status = models.CharField(max_length=16, choices=STATUS_CHOICES, default='active')
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ('-date', 'start_time')
@@ -60,7 +60,7 @@ class Booking(models.Model):
             raise ValidationError('Недельный лимит 16 часов превышен.')
 
 
-class Reminder(models.Model):
+class Reminder(TimeStampedModel):
     booking = models.OneToOneField(
         Booking,
         on_delete=models.CASCADE,
@@ -69,7 +69,6 @@ class Reminder(models.Model):
     scheduled_for = models.DateTimeField()
     is_sent = models.BooleanField(default=False)
     sent_at = models.DateTimeField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = 'Напоминание'
@@ -77,4 +76,3 @@ class Reminder(models.Model):
 
     def __str__(self):
         return f'Напоминание для брони #{self.booking.id}'
-    

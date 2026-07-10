@@ -1,16 +1,19 @@
-from django.test import TestCase
+import pytest
 
 
-class BookingModelTest(TestCase):
+@pytest.mark.django_db
+class TestBookingModel:
     # TODO PIXELS-020
     pass
 
 
-class BookingViewTest(TestCase):
+@pytest.mark.django_db
+class TestBookingView:
     # TODO PIXELS-021
     pass
 
 
-class BookingFormTest(TestCase):
+@pytest.mark.django_db
+class TestBookingForm:
     # TODO PIXELS-022
     pass
