@@ -12,7 +12,7 @@ class RegisterForm(UserCreationForm):
         email = self.cleaned_data['email']
 
         if get_user_model().objects.filter(email=email).exists():
-            raise forms.ValidationError('Пользователь с таким именем уже существует.')
+            raise forms.ValidationError('Пользователь с такой почтой уже существует.')
         
         return email
 
