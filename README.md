@@ -41,4 +41,4 @@ python manage.py runserver
 | `/accounts/register/` | Регистрация | гость |
 | `/accounts/login/` | Вход | гость |
 | `/accounts/logout/` | Выход (POST) | вошедший |
-| `/admin/` | Django-админка | суперюзер |
+| `/secure-adm1n/` | Django-админка | суперюзер |

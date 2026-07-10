@@ -23,23 +23,10 @@ services:
     command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
+    env_file:
+      - .env
     ports:
       - "8000:8000"
-    environment:
-      SECRET_KEY: django-insecure-dev-only-change-in-production
-      DEBUG: "True"
-      ALLOWED_HOSTS: 127.0.0.1,localhost,0.0.0.0,web
-      DB_ENGINE: django.db.backends.postgresql
-      DB_NAME: parkandgo
-      DB_USER: parkandgo
-      DB_PASSWORD: parkandgo
-      DB_HOST: db
-      DB_PORT: "5432"
-      EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
-      EMAIL_HOST: maildev
-      EMAIL_PORT: "1025"
-      EMAIL_USE_TLS: "False"
-      DEFAULT_FROM_EMAIL: noreply@parkandgo.local
     depends_on:
       db:
         condition: service_healthy
