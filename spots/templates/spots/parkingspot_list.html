@@ -12,18 +12,52 @@
 
 {% if spots %}
 
-<div class="panel d-none d-md-block">
+<div class="free-spots-section">
+    <h2 class="free-spots-title">
+        Свободные места
+        <span class="free-count-badge">
+            <span class="status-dot {% if free_spots_count > 0 %}status-dot-active{% else %}status-dot-inactive{% endif %}"></span>
+            <span class="free-count-number {% if free_spots_count > 0 %}free-count-green{% else %}free-count-red{% endif %}">
+                {{ free_spots_count }}
+            </span>
+        </span>
+    </h2>
+
+    {% if free_spots_count > 0 %}
+    <div class="free-spots-grid">
+        {% for spot in free_spots|slice:":5" %}
+        <div class="free-spot-card" onclick="scrollToSpot('{{ spot.number }}')">
+            <div class="free-spot-number">{{ spot.number }}</div>
+            <div class="free-spot-desc">{{ spot.description|default:"—" }}</div>
+            <a href="{% url 'bookings:create' %}?spot={{ spot.id }}" class="btn btn-sm btn-outline-primary book-btn">
+                Забронировать
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="text-center mt-3">
+        <a href="#all-spots" class="btn btn-outline-primary btn-sm">Показать все места</a>
+    </div>
+    {% else %}
+    <div class="no-free-spots">
+        К сожалению, все места заняты
+    </div>
+    {% endif %}
+</div>
+
+<div class="panel d-none d-md-block" id="all-spots">
     <table class="table table-bookings align-middle">
         <thead>
             <tr>
                 <th>Место</th>
                 <th>Описание</th>
                 <th>Статус</th>
+                <th class="text-center">Действие</th>
             </tr>
         </thead>
         <tbody>
         {% for spot in spots %}
-        <tr>
+        <tr id="spot-{{ spot.number }}" class="spot-row">
             <td class="cell-spot">{{ spot.number }}</td>
             <td>{{ spot.description|default:"—" }}</td>
             <td>
@@ -39,16 +73,24 @@
                 </span>
                 {% endif %}
             </td>
+            <td class="text-center">
+                {% if spot.is_active %}
+                <a href="{% url 'bookings:create' %}?spot={{ spot.id }}" class="btn btn-sm btn-outline-primary action-btn">
+                    Забронировать
+                </a>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
         </tbody>
     </table>
 </div>
 
-<div class="d-md-none d-flex flex-column gap-3">
+<div class="d-md-none" id="all-spots">
+    <h3 class="mt-4 mb-3">Все места</h3>
     {% for spot in spots %}
-    <div class="booking-card spot-card">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+    <div id="spot-{{ spot.number }}" class="booking-card spot-card spot-row-mobile">
+        <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="bc-spot">{{ spot.number }}</span>
             {% if spot.is_active %}
             <span class="badge-status badge-active">
@@ -68,6 +110,13 @@
             <span>{{ spot.description }}</span>
         </div>
         {% endif %}
+        {% if spot.is_active %}
+        <div class="mt-2">
+            <a href="{% url 'bookings:create' %}?spot={{ spot.id }}" class="btn btn-sm btn-outline-primary action-btn w-100">
+                Забронировать
+            </a>
+        </div>
+        {% endif %}
     </div>
     {% endfor %}
 </div>
@@ -78,4 +127,19 @@
 </div>
 {% endif %}
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function scrollToSpot(spotNumber) {
+    var target = document.getElementById('spot-' + spotNumber);
+    if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.classList.add('highlight-spot');
+        setTimeout(function() {
+            target.classList.remove('highlight-spot');
+        }, 1200);
+    }
+}
+</script>
 {% endblock %}
