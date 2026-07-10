@@ -17,7 +17,7 @@
   <header>
     <nav class="navbar navbar-expand-md app-navbar">
       <div class="container">
-        <a class="navbar-brand" href="{% url 'bookings:list' %}">
+        <a class="navbar-brand" href="{% url 'spots:list' %}">
           <span class="brand-mark">П</span>Парк-и-Гоу
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Меню">
@@ -25,9 +25,9 @@
         </button>
         <div class="collapse navbar-collapse" id="mainNav">
           <ul class="navbar-nav ms-auto align-items-md-center">
-            <li class="nav-item"><a class="nav-link {% if request.resolver_match.view_name == 'spots:list' %}active{% endif %}" href="{% url 'spots:list' %}">Места</a></li>
+            <li class="nav-item"><a class="nav-link {% if request.resolver_match.view_name == 'spots:list' or request.resolver_match.view_name == 'spots:detail' %}active{% endif %}" href="{% url 'spots:list' %}">Места</a></li>
             {% if user.is_authenticated %}
-              <li class="nav-item"><a class="nav-link {% if request.resolver_match.view_name == 'bookings:list' or request.resolver_match.view_name == 'bookings:detail' %}active{% endif %}" href="{% url 'bookings:list' %}">Бронирования</a></li>
+              <li class="nav-item"><a class="nav-link {% if request.resolver_match.view_name == 'bookings:list' or request.resolver_match.view_name == 'bookings:detail' %}active{% endif %}" href="{% url 'bookings:list' %}">Мои брони</a></li>
               <li class="nav-item"><a class="nav-link {% if request.resolver_match.view_name == 'bookings:create' or request.resolver_match.view_name == 'bookings:edit' %}active{% endif %}" href="{% url 'bookings:create' %}">Создать бронь</a></li>
               <li class="nav-item">
                 <form method="post" action="{% url 'users:logout' %}" class="d-inline">

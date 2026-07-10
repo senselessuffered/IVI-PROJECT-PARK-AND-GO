@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Место {{ spot.number }} — Парк-и-Гоу{% endblock %}
+
+{% block container_extra %} container-narrow{% endblock %}
+
+{% block content %}
+  <a href="{% url 'spots:list' %}" class="text-decoration-none d-inline-block mb-3">← Ко всем местам</a>
+
+  <div class="page-head">
+    <div>
+      <h1 class="d-flex align-items-center gap-3">
+        {{ spot.number }}
+        {% if spot.is_active %}
+        <span class="badge-status badge-active">Активно</span>
+        {% else %}
+        <span class="badge-status badge-cancelled">Отключено</span>
+        {% endif %}
+      </h1>
+      {% if spot.description %}<p class="page-sub">{{ spot.description }}</p>{% endif %}
+    </div>
+    {% if user.is_authenticated and spot.is_active %}
+    <a href="{% url 'bookings:create' %}?spot={{ spot.pk }}" class="btn btn-primary">Забронировать</a>
+    {% endif %}
+  </div>
+
+  <h2 class="h5 mb-3">Актуальные бронирования</h2>
+
+  {% if active_bookings %}
+  <div class="panel">
+    <table class="table table-bookings align-middle">
+      <thead>
+        <tr>
+          <th>Дата</th>
+          <th>Время</th>
+          <th>Длительность</th>
+          <th>Кто забронировал</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in active_bookings %}
+        <tr>
+          <td>{{ booking.date|date:'j E Y' }}</td>
+          <td>{{ booking.start_time|time:'H:i' }}–{{ booking.end_time|time:'H:i' }}</td>
+          <td>{{ booking.duration_hours }} ч</td>
+          <td>{{ booking.user.get_full_name|default:booking.user.username }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="panel panel-pad text-center text-muted-2">
+    Активных бронирований нет — место свободно.
+  </div>
+  {% endif %}
+{% endblock %}
