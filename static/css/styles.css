@@ -339,3 +339,43 @@ a:hover { color: var(--pg-accent-dark); }
 
 }
 
+.table-bookings tbody tr {
+    opacity: 0;
+    transform: translateY(15px);
+    animation: fadeUp 0.4s ease forwards;
+}
+
+.table-bookings tbody tr:nth-child(1) { animation-delay: 0s; }
+.table-bookings tbody tr:nth-child(2) { animation-delay: 0.08s; }
+.table-bookings tbody tr:nth-child(3) { animation-delay: 0.16s; }
+.table-bookings tbody tr:nth-child(4) { animation-delay: 0.24s; }
+.table-bookings tbody tr:nth-child(5) { animation-delay: 0.32s; }
+.table-bookings tbody tr:nth-child(6) { animation-delay: 0.40s; }
+.table-bookings tbody tr:nth-child(7) { animation-delay: 0.48s; }
+.table-bookings tbody tr:nth-child(8) { animation-delay: 0.56s; }
+.table-bookings tbody tr:nth-child(9) { animation-delay: 0.64s; }
+.table-bookings tbody tr:nth-child(10) { animation-delay: 0.72s; }
+
+.booking-card {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.5s ease forwards;
+}
+
+.booking-card:nth-child(1) { animation-delay: 0s; }
+.booking-card:nth-child(2) { animation-delay: 0.1s; }
+.booking-card:nth-child(3) { animation-delay: 0.2s; }
+.booking-card:nth-child(4) { animation-delay: 0.3s; }
+.booking-card:nth-child(5) { animation-delay: 0.4s; }
+.booking-card:nth-child(6) { animation-delay: 0.5s; }
+.booking-card:nth-child(7) { animation-delay: 0.6s; }
+.booking-card:nth-child(8) { animation-delay: 0.7s; }
+.booking-card:nth-child(9) { animation-delay: 0.8s; }
+.booking-card:nth-child(10) { animation-delay: 0.9s; }
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
