@@ -3,59 +3,79 @@
 {% block title %}Парковочные места — Парк-и-Гоу{% endblock %}
 
 {% block content %}
-  <div class="page-head">
+<div class="page-head">
     <div>
-      <h1>Парковочные места</h1>
-      <p class="page-sub">Гостевые места вашей компании</p>
+        <h1>Парковочные места</h1>
+        <p class="page-sub">Гостевые места вашей компании</p>
     </div>
-  </div>
+</div>
 
-  {% if spots %}
-  <div class="panel d-none d-md-block">
+{% if spots %}
+
+<div class="panel d-none d-md-block">
     <table class="table table-bookings align-middle">
-      <thead>
-        <tr>
-          <th>Место</th>
-          <th>Описание</th>
-          <th>Статус</th>
-        </tr>
-      </thead>
-      <tbody>
+        <thead>
+            <tr>
+                <th>Место</th>
+                <th>Описание</th>
+                <th>Статус</th>
+            </tr>
+        </thead>
+        <tbody>
         {% for spot in spots %}
         <tr>
-          <td class="cell-spot">{{ spot.number }}</td>
-          <td>{{ spot.description|default:'—' }}</td>
-          <td>
-            {% if spot.is_active %}
-            <span class="badge-status badge-active">Доступно</span>
-            {% else %}
-            <span class="badge-status badge-cancelled">Недоступно</span>
-            {% endif %}
-          </td>
+            <td class="cell-spot">{{ spot.number }}</td>
+            <td>{{ spot.description|default:"—" }}</td>
+            <td>
+                {% if spot.is_active %}
+                <span class="badge-status badge-active">
+                    <span class="status-dot status-dot-active"></span>
+                    Доступно
+                </span>
+                {% else %}
+                <span class="badge-status badge-cancelled">
+                    <span class="status-dot"></span>
+                    Недоступно
+                </span>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
-      </tbody>
+        </tbody>
     </table>
-  </div>
+</div>
 
-  <div class="d-md-none d-flex flex-column gap-3">
+<div class="d-md-none d-flex flex-column gap-3">
     {% for spot in spots %}
-    <div class="booking-card">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <span class="bc-spot">{{ spot.number }}</span>
-        {% if spot.is_active %}
-        <span class="badge-status badge-active">Доступно</span>
-        {% else %}
-        <span class="badge-status badge-cancelled">Недоступно</span>
+    <div class="booking-card spot-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="bc-spot">{{ spot.number }}</span>
+            {% if spot.is_active %}
+            <span class="badge-status badge-active">
+                <span class="status-dot status-dot-active"></span>
+                Доступно
+            </span>
+            {% else %}
+            <span class="badge-status badge-cancelled">
+                <span class="status-dot"></span>
+                Недоступно
+            </span>
+            {% endif %}
+        </div>
+        {% if spot.description %}
+        <div class="bc-row">
+            <span class="bc-label">Описание</span>
+            <span>{{ spot.description }}</span>
+        </div>
         {% endif %}
-      </div>
-      {% if spot.description %}<div class="bc-row"><span class="bc-label">Описание</span><span>{{ spot.description }}</span></div>{% endif %}
     </div>
     {% endfor %}
-  </div>
-  {% else %}
-  <div class="panel panel-pad text-center text-muted-2">
+</div>
+
+{% else %}
+<div class="panel panel-pad text-center text-muted-2">
     Парковочные места пока не добавлены.
-  </div>
-  {% endif %}
+</div>
+{% endif %}
+
 {% endblock %}

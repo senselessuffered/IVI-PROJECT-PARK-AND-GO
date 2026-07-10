@@ -1,6 +1,8 @@
-from django.views.generic import TemplateView
+from django.views.generic import ListView
+from spots.models import ParkingSpot
 
 
-class ParkingSpotListView(TemplateView):
-    # TODO PIXELS-011
+class ParkingSpotListView(ListView):
+    model = ParkingSpot
     template_name = 'spots/parkingspot_list.html'
+    context_object_name = 'spots'
