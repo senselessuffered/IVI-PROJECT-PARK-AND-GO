@@ -1,0 +1,25 @@
+.highlight-spot {
+  background: rgba(47, 95, 224, 0.12) !important;
+  transition: background 0.8s ease-out;
+}
+
+.highlight-spot td {
+  background: rgba(47, 95, 224, 0.10) !important;
+  transition: background 0.8s ease-out;
+}
+
+.highlight-spot .cell-spot {
+  font-weight: 700;
+  color: #2f5fe0;
+}
+
+.highlight-spot .badge-status {
+  background: rgba(47, 95, 224, 0.15) !important;
+}
+
+.spot-row-mobile.highlight-spot {
+  background: rgba(47, 95, 224, 0.10) !important;
+  border: 2px solid #2f5fe0;
+  box-shadow: 0 0 20px rgba(47, 95, 224, 0.12);
+  transition: all 0.8s ease-out;
+}

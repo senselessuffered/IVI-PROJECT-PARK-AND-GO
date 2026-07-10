@@ -1,0 +1,24 @@
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.page-head h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-sub { color: var(--pg-muted); margin: .25rem 0 0; font-size: .95rem; }
+
+.panel {
+  background: #fff;
+  border: 1px solid var(--pg-line);
+  border-radius: var(--pg-radius);
+}
+
+.panel-pad { padding: 1.25rem 1.35rem; }

@@ -1,0 +1,43 @@
+body {
+  font-family: 'Golos Text', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: var(--pg-ink);
+  background: var(--pg-bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main { flex: 1 0 auto; }
+
+a { color: var(--pg-accent); }
+a:hover { color: var(--pg-accent-dark); }
+
+.text-muted-2 { color: var(--pg-muted) !important; }
+
+.btn-primary {
+  --bs-btn-bg: var(--pg-accent);
+  --bs-btn-border-color: var(--pg-accent);
+  --bs-btn-hover-bg: var(--pg-accent-dark);
+  --bs-btn-hover-border-color: var(--pg-accent-dark);
+  --bs-btn-active-bg: var(--pg-accent-dark);
+  --bs-btn-active-border-color: var(--pg-accent-dark);
+  --bs-btn-disabled-bg: var(--pg-accent);
+  --bs-btn-disabled-border-color: var(--pg-accent);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--pg-accent);
+  --bs-btn-border-color: var(--pg-accent);
+  --bs-btn-hover-bg: var(--pg-accent);
+  --bs-btn-hover-border-color: var(--pg-accent);
+  --bs-btn-active-bg: var(--pg-accent);
+  --bs-btn-active-border-color: var(--pg-accent);
+}
+
+.btn { --bs-btn-font-weight: 500; border-radius: 9px; }
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--pg-accent);
+  box-shadow: 0 0 0 .2rem rgba(47, 95, 224, .15);
+}

@@ -1,0 +1,7 @@
+.limit-hint {
+  font-size: .85rem;
+  color: var(--pg-muted);
+  background: #f3f4f7;
+  border-radius: 9px;
+  padding: .65rem .85rem;
+}

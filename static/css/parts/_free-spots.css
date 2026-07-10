@@ -1,0 +1,149 @@
+.free-spots-section {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem 1.5rem 1rem;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.free-spots-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--pg-ink);
+}
+
+.free-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--pg-muted);
+  background: rgba(0, 0, 0, 0.04);
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+}
+
+.free-count-badge .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.free-count-badge .status-dot-active {
+  background: #1d8f4b;
+  animation: pulseGreen 1.6s infinite;
+}
+
+.free-count-badge .status-dot-inactive {
+  background: #b93a3a;
+  animation: none;
+}
+
+.free-count-number {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.free-count-green {
+  color: #1d8f4b;
+}
+
+.free-count-red {
+  color: #b93a3a;
+}
+
+.free-spots-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.free-spot-card {
+  background: #fff;
+  border: 1px solid var(--pg-line);
+  border-radius: 16px;
+  padding: 1rem 0.6rem;
+  text-align: center;
+  transition: all 0.35s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+.free-spot-card::before {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  background: rgba(47, 95, 224, 0.06);
+  border-radius: 50%;
+  top: -100px;
+  right: -70px;
+  transition: transform 0.4s ease;
+}
+
+.free-spot-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(47, 95, 224, 0.08);
+  border-color: var(--pg-accent);
+}
+
+.free-spot-card:hover::before {
+  transform: scale(1.4);
+}
+
+.free-spot-number {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--pg-ink);
+  position: relative;
+  z-index: 1;
+}
+
+.free-spot-desc {
+  font-size: 0.75rem;
+  color: var(--pg-muted);
+  margin-top: 0.2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.free-spot-card .book-btn {
+  margin-top: 8px;
+  width: 100%;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
+}
+
+.no-free-spots {
+  text-align: center;
+  padding: 1.5rem 0;
+  color: var(--pg-muted);
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .free-spots-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+  }
+  .free-spots-section {
+    padding: 1rem 1rem 0.8rem;
+  }
+  .free-spot-number {
+    font-size: 1.3rem;
+  }
+}

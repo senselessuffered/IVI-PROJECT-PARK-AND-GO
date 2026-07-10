@@ -1,0 +1,10 @@
+:root {
+  --pg-accent: #2f5fe0;
+  --pg-accent-dark: #244cc0;
+  --pg-accent-soft: #eaf0fe;
+  --pg-ink: #1c2230;
+  --pg-muted: #6b7280;
+  --pg-line: #e7e9ef;
+  --pg-bg: #f6f7f9;
+  --pg-radius: 12px;
+}

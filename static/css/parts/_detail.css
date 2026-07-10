@@ -1,0 +1,19 @@
+.detail-list { margin: 0; }
+
+.detail-list .row-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .85rem 0;
+  border-bottom: 1px solid var(--pg-line);
+}
+
+.detail-list .row-item:last-child { border-bottom: 0; }
+.detail-list .dl-label { color: var(--pg-muted); }
+.detail-list .dl-value { font-weight: 600; text-align: right; }
+
+.detail-spot {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}

@@ -1,0 +1,9 @@
+.auth-wrap {
+  max-width: 420px;
+  margin-inline: auto;
+}
+
+.auth-wrap .brand-line {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}

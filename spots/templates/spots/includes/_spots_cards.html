@@ -1,0 +1,24 @@
+<div class="d-md-none" id="all-spots">
+    <h3 class="mt-4 mb-3">Все места</h3>
+    {% for spot in spots %}
+    <div id="spot-{{ spot.number }}" class="booking-card spot-card spot-row-mobile">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="bc-spot">{{ spot.number }}</span>
+            {% include 'spots/includes/_status_badge.html' with spot=spot only %}
+        </div>
+        {% if spot.description %}
+        <div class="bc-row">
+            <span class="bc-label">Описание</span>
+            <span>{{ spot.description }}</span>
+        </div>
+        {% endif %}
+        {% if spot.is_active %}
+        <div class="mt-2">
+            <a href="{% url 'bookings:create' %}?spot={{ spot.id }}" class="btn btn-sm btn-outline-primary action-btn w-100">
+                Забронировать
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
