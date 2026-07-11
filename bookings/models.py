@@ -34,6 +34,9 @@ class Booking(TimeStampedModel):
         return int((end - start).total_seconds() // 3600)
 
     def clean(self):
+        if not self.date or not self.start_time or not self.end_time:
+            return
+
         if self.end_time <= self.start_time:
             raise ValidationError('Время окончания должно быть позже начала.')
 
