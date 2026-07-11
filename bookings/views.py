@@ -1,7 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.urls import reverse
-from django.views.generic import CreateView, ListView, RedirectView, UpdateView, DetailView
+from django.views.generic import CreateView, ListView, RedirectView, UpdateView, DetailView, View
+from django.shortcuts import get_object_or_404, redirect
 
 from bookings.forms import BookingForm
 from bookings.models import Booking
@@ -113,10 +114,22 @@ class BookingUpdateView(LoginRequiredMixin, UpdateView):
         )
 
 
-class BookingCancelView(LoginRequiredMixin, RedirectView):
-    # TODO PIXELS-016
-    url = '/orders/'
+class BookingCancelView(LoginRequiredMixin, View):
 
+    def post(self, request, pk):
+        booking = get_object_or_404(Booking, pk=pk)
+
+        if booking.user != request.user:
+            raise PermissionDenied
+
+        if booking.status == 'active':
+            booking.status = 'cancelled'
+            booking.save(update_fields=['status'])
+
+        return redirect(
+            'bookings:detail',
+            pk=booking.pk,
+        )
 
 class BookingDeleteView(LoginRequiredMixin, RedirectView):
     # TODO PIXELS-017
