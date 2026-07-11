@@ -7,6 +7,7 @@ from bookings.models import Booking
 class BookingListView(LoginRequiredMixin, ListView):
     model = Booking
     context_object_name = 'bookings'
+    paginate_by = 8
 
     def get_queryset(self):
         queryset = Booking.objects.filter(user=self.request.user).select_related('parking_spot')
