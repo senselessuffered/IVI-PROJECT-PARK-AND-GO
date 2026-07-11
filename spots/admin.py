@@ -1,6 +1,11 @@
 from django.contrib import admin
+from .models import ParkingSpot
 
 
+@admin.register(ParkingSpot)
 class ParkingSpotAdmin(admin.ModelAdmin):
-    # TODO PIXELS-018
-    pass
+    list_display = ("id", "number", "is_active", "created_at", "updated_at")
+    list_filter = ("is_active",)
+    search_fields = ("number", "description")
+    ordering = ("number",)
+    readonly_fields = ("created_at", "updated_at")
