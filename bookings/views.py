@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.urls import reverse
-from django.views.generic import CreateView, ListView, RedirectView, TemplateView
+from django.views.generic import CreateView, ListView, RedirectView, TemplateView, DetailView
 
 from bookings.forms import BookingForm
 from bookings.models import Booking
@@ -36,9 +36,17 @@ class BookingListView(LoginRequiredMixin, SafePaginationMixin, ListView):
         return queryset
 
 
-class BookingDetailView(LoginRequiredMixin, RedirectView):
-    # TODO PIXELS-013
-    url = '/orders/'
+class BookingDetailView(LoginRequiredMixin, DetailView):
+    model = Booking
+    template_name = 'bookings/booking_detail.html'
+    context_object_name = 'booking'
+
+    def get_queryset(self):
+        return (
+            Booking.objects
+            .filter(user=self.request.user)
+            .select_related('parking_spot', 'user')
+        )
 
 
 class BookingCreateView(LoginRequiredMixin, CreateView):
