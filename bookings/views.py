@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.urls import reverse
-from django.views.generic import CreateView, ListView, RedirectView, TemplateView, DetailView
+from django.views.generic import CreateView, ListView, RedirectView, UpdateView, DetailView
 
 from bookings.forms import BookingForm
 from bookings.models import Booking
@@ -75,9 +75,42 @@ class BookingCreateView(LoginRequiredMixin, CreateView):
         return reverse('bookings:detail', kwargs={'pk': self.object.pk})
 
 
-class BookingUpdateView(LoginRequiredMixin, TemplateView):
-    # TODO PIXELS-015
+class BookingUpdateView(LoginRequiredMixin, UpdateView):
+    model = Booking
+    form_class = BookingForm
     template_name = 'bookings/booking_form.html'
+    context_object_name = 'booking'
+
+    def get_object(self, queryset=None):
+        booking = super().get_object(queryset)
+
+        if booking.user != self.request.user:
+            raise PermissionDenied
+
+        return booking
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.instance.user = self.request.user
+        return form
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        form = context['form']
+        context['busy_hours'] = busy_hours_for(
+            form['parking_spot'].value(),
+            form['date'].value(),
+            exclude_pk=self.object.pk,
+        )
+
+        return context
+
+    def get_success_url(self):
+        return reverse(
+            'bookings:detail',
+            kwargs={'pk': self.object.pk},
+        )
 
 
 class BookingCancelView(LoginRequiredMixin, RedirectView):
