@@ -10,6 +10,13 @@
     </div>
   </div>
 
+  <form class="search-bar mb-4" role="search" method="get" action="{% url 'spots:list' %}">
+    <div class="input-group" style="max-width:460px">
+      <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" maxlength="50" placeholder="Поиск по номеру места…" aria-label="Поиск">
+      <button class="btn btn-primary" type="submit">Найти</button>
+    </div>
+  </form>
+
   {% if spots %}
   <div class="panel d-none d-md-block">
     <table class="table table-bookings align-middle">
@@ -53,9 +60,11 @@
     </div>
     {% endfor %}
   </div>
+
+  {% include 'includes/pagination.html' %}
   {% else %}
   <div class="panel panel-pad text-center text-muted-2">
-    Парковочные места пока не добавлены.
+    {% if request.GET.q %}По запросу ничего не найдено.{% else %}Парковочные места пока не добавлены.{% endif %}
   </div>
   {% endif %}
 {% endblock %}

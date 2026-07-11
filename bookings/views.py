@@ -2,9 +2,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, RedirectView, TemplateView
 
 from bookings.models import Booking
+from core.mixins import SafePaginationMixin
 
 
-class BookingListView(LoginRequiredMixin, ListView):
+class BookingListView(LoginRequiredMixin, SafePaginationMixin, ListView):
     model = Booking
     context_object_name = 'bookings'
     paginate_by = 8
