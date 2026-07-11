@@ -115,7 +115,6 @@ class BookingUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class BookingCancelView(LoginRequiredMixin, View):
-
     def post(self, request, pk):
         booking = get_object_or_404(Booking, pk=pk)
 
@@ -131,6 +130,12 @@ class BookingCancelView(LoginRequiredMixin, View):
             pk=booking.pk,
         )
 
-class BookingDeleteView(LoginRequiredMixin, RedirectView):
-    # TODO PIXELS-017
-    url = '/orders/'
+class BookingDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        booking = get_object_or_404(Booking, pk=pk)
+
+        if booking.user != request.user:
+            raise PermissionDenied
+
+        booking.delete()
+        return redirect('bookings:list')

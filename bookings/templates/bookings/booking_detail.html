@@ -44,7 +44,13 @@
       <button type="submit" class="btn btn-outline-secondary">Отменить бронь</button>
     </form>
     {% endif %}
-    <a href="{% url 'bookings:delete' booking.pk %}" class="btn btn-outline-danger ms-md-auto">Удалить</a>
+    <form method="post" 
+          action="{% url 'bookings:delete' booking.pk %}"
+          class="ms-md-auto"
+          onsubmit="return confirm('Удалить бронь?');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-danger">Удалить</button>
+    </form>
   </div>
   {% endif %}
 {% endblock %}
