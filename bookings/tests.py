@@ -8,7 +8,7 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from bookings.models import Booking
-from bookings.views import busy_hours_for
+from bookings.views import busy_hours_for, BookingCreateView, BookingUpdateView
 from spots.models import ParkingSpot
 
 User = get_user_model()
@@ -84,6 +84,14 @@ class BusyHoursTests(TestCase):
             busy_hours_for(self.spot.pk, self.booking.date),
             [],
         )
+
+    def test_busy_hours_with_exclude_no_bookings(self):
+        hours = busy_hours_for(
+            self.spot.pk,
+            self.booking.date,
+            exclude_pk=999,
+        )
+        self.assertEqual(hours, [10, 11, 12])
 
 
 class BookingListViewTests(TestCase):
@@ -359,6 +367,25 @@ class BookingCreateViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['form'].errors)
 
+    def test_get_success_url(self):
+        self.client.login(username='user', password='testpass123')
+        self.client.post(
+            reverse('bookings:create'),
+            {
+                'parking_spot': self.spot.pk,
+                'date': '2030-01-01',
+                'start_time': '10:00',
+                'end_time': '12:00',
+            },
+        )
+        booking = Booking.objects.first()
+        view = BookingCreateView()
+        view.object = booking
+        self.assertEqual(
+            view.get_success_url(),
+            reverse('bookings:detail', kwargs={'pk': booking.pk})
+        )
+
 
 class BookingUpdateViewTests(TestCase):
 
@@ -389,6 +416,45 @@ class BookingUpdateViewTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'bookings/booking_form.html')
+
+    def test_update_booking(self):
+        self.client.login(username='user', password='testpass123')
+        response = self.client.post(
+            reverse('bookings:edit', kwargs={'pk': self.booking.pk}),
+            {
+                'parking_spot': self.spot.pk,
+                'date': '2030-01-02',
+                'start_time': '11:00',
+                'end_time': '13:00',
+            },
+        )
+        self.booking.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(
+            response,
+            reverse('bookings:detail', kwargs={'pk': self.booking.pk})
+        )
+        self.assertEqual(self.booking.date.strftime('%Y-%m-%d'), '2030-01-02')
+        self.assertEqual(self.booking.start_time.strftime('%H:%M'), '11:00')
+        self.assertEqual(self.booking.end_time.strftime('%H:%M'), '13:00')
+
+    def test_permission_denied_on_edit_other_user_booking(self):
+        other_user = User.objects.create_user(
+            username='other',
+            password='testpass123',
+        )
+        other_booking = Booking.objects.create(
+            user=other_user,
+            parking_spot=self.spot,
+            date=date(2030, 1, 1),
+            start_time=time(10),
+            end_time=time(12),
+        )
+        self.client.login(username='user', password='testpass123')
+        response = self.client.get(
+            reverse('bookings:edit', kwargs={'pk': other_booking.pk})
+        )
+        self.assertEqual(response.status_code, 403)
 
 
 class BookingCancelViewTests(TestCase):
