@@ -1,10 +1,19 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import RedirectView, TemplateView
+from django.views.generic import ListView, RedirectView, TemplateView
+
+from bookings.models import Booking
 
 
-class BookingListView(LoginRequiredMixin, TemplateView):
-    # TODO PIXELS-012
-    template_name = 'bookings/booking_list.html'
+class BookingListView(LoginRequiredMixin, ListView):
+    model = Booking
+    context_object_name = 'bookings'
+
+    def get_queryset(self):
+        queryset = Booking.objects.filter(user=self.request.user).select_related('parking_spot')
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(parking_spot__number__icontains=query)
+        return queryset
 
 
 class BookingDetailView(LoginRequiredMixin, RedirectView):
