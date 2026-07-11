@@ -42,23 +42,7 @@
     {% for booking in bookings %}{% include 'bookings/_booking_card.html' %}{% endfor %}
   </div>
 
-  {% if is_paginated %}
-  <nav class="mt-4" aria-label="Навигация по страницам">
-    <ul class="pagination justify-content-center mb-0">
-      <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
-        <a class="page-link" href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% else %}#{% endif %}">Назад</a>
-      </li>
-      {% for num in paginator.page_range %}
-      <li class="page-item {% if num == page_obj.number %}active{% endif %}">
-        <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ num }}</a>
-      </li>
-      {% endfor %}
-      <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
-        <a class="page-link" href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% else %}#{% endif %}">Вперёд</a>
-      </li>
-    </ul>
-  </nav>
-  {% endif %}
+  {% include 'includes/pagination.html' %}
 
   {% else %}
   <div class="panel panel-pad text-center text-muted-2">

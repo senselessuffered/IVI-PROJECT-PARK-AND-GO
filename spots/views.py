@@ -1,12 +1,21 @@
 from django.views.generic import DetailView, ListView
 
+from core.mixins import SafePaginationMixin
 from spots.models import ParkingSpot
 
 
-class ParkingSpotListView(ListView):
+class ParkingSpotListView(SafePaginationMixin, ListView):
     model = ParkingSpot
     template_name = 'spots/parkingspot_list.html'
     context_object_name = 'spots'
+    paginate_by = 5
+
+    def get_queryset(self):
+        queryset = ParkingSpot.objects.all()
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(number__icontains=query)
+        return queryset
 
 
 class ParkingSpotDetailView(DetailView):
