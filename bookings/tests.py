@@ -1,11 +1,20 @@
 import pytest
 import datetime
+from datetime import date, time
+from unittest.mock import patch
 
 from django.core.exceptions import ValidationError
+from django.forms import HiddenInput
+from django.test import TestCase
+from django.urls import reverse
+from django.contrib.auth import get_user_model
 
+from bookings.forms import BookingForm
 from bookings.models import Booking
+from bookings.views import BookingCreateView, busy_hours_for
+from spots.models import ParkingSpot
 
-print("BOOKINGS TESTS LOADED")
+User = get_user_model()
 
 @pytest.mark.django_db
 class TestBookingModel:
@@ -13,12 +22,12 @@ class TestBookingModel:
         booking = Booking.objects.create(
             user = user, 
             parking_spot = parking_spot,
-            date = datetime.date(2026, 7, 11),
+            date = datetime.date(2030, 7, 11),
             start_time = datetime.time(10),
             end_time = datetime.time(12),
         )
 
-        assert str(booking) == f"{parking_spot} 2026-07-11"
+        assert str(booking) == f"{parking_spot} 2030-07-11"
     
     def test_duration_hours(self, user, parking_spot):
         booking = Booking(
@@ -47,7 +56,7 @@ class TestBookingModel:
         Booking.objects.create(
             user = user, 
             parking_spot = parking_spot,
-            date = datetime.date(2026, 7, 11),
+            date = datetime.date(2030, 7, 11),
             start_time = datetime.time(10, 0),
             end_time = datetime.time(12, 0),
         )
@@ -55,7 +64,7 @@ class TestBookingModel:
         booking = Booking(
             user = user,
             parking_spot = parking_spot,
-            date = datetime.date(2026, 7, 11),
+            date = datetime.date(2030, 7, 11),
             start_time = datetime.time(11, 0),
             end_time = datetime.time(13, 0),
         )
@@ -69,7 +78,7 @@ class TestBookingModel:
         Booking.objects.create(
             user = user, 
             parking_spot = parking_spot,
-            date = datetime.date(2026, 7, 11),
+            date = datetime.date(2030, 7, 11),
             start_time = datetime.time(8, 0),
             end_time = datetime.time(16, 0),
         )
@@ -77,7 +86,7 @@ class TestBookingModel:
         booking = Booking(
             user = user, 
             parking_spot = parking_spot,
-            date = datetime.date(2026, 7, 11),
+            date = datetime.date(2030, 7, 11),
             start_time = datetime.time(16, 0),
             end_time = datetime.time(17, 0),
         )
@@ -91,7 +100,7 @@ class TestBookingModel:
         Booking.objects.create(
             user = user, 
             parking_spot = parking_spot,
-            date = datetime.date(2026, 7, 7),
+            date = datetime.date(2030, 7, 8),
             start_time = datetime.time(8, 0),
             end_time = datetime.time(16, 0),
         )
@@ -99,7 +108,7 @@ class TestBookingModel:
         Booking.objects.create(
             user = user,
             parking_spot = parking_spot,
-            date = datetime.date(2026, 7, 8),
+            date = datetime.date(2030, 7, 9),
             start_time = datetime.time(8, 0),
             end_time = datetime.time(16, 0),
         )
@@ -107,7 +116,7 @@ class TestBookingModel:
         booking = Booking(
             user = user, 
             parking_spot = parking_spot,
-            date = datetime.date(2026, 7, 9),
+            date = datetime.date(2030, 7, 10),
             start_time = datetime.time(8, 0),
             end_time = datetime.time(9, 0),
         )
@@ -580,10 +589,10 @@ class BookingCancelViewTests(TestCase):
 
     def test_redirect(self):
         self.client.login(username='user', password='testpass123')
-        response = self.client.get(
+        response = self.client.post(
             reverse('bookings:cancel', kwargs={'pk': self.booking.pk})
         )
-        self.assertRedirects(response, '/orders/')
+        self.assertRedirects(response, reverse('bookings:detail', kwargs={'pk': self.booking.pk}))
 
 
 class BookingDeleteViewTests(TestCase):
@@ -610,10 +619,10 @@ class BookingDeleteViewTests(TestCase):
 
     def test_redirect(self):
         self.client.login(username='user', password='testpass123')
-        response = self.client.get(
+        response = self.client.post(
             reverse('bookings:delete', kwargs={'pk': self.booking.pk})
         )
-        self.assertRedirects(response, '/orders/')
+        self.assertRedirects(response, reverse('bookings:list'))
 
 
 @pytest.mark.django_db
