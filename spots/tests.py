@@ -2,6 +2,34 @@ from django.test import TestCase
 from django.urls import reverse
 
 from spots.models import ParkingSpot
+from spots.templatetags.pagination import pagination_window
+
+
+class PageStub:
+    def __init__(self, number):
+        self.number = number
+
+
+class PaginatorStub:
+    def __init__(self, num_pages):
+        self.num_pages = num_pages
+
+
+class PaginationWindowTests(TestCase):
+    def test_window_has_no_more_than_five_pages(self):
+        pages = list(pagination_window(PageStub(10), PaginatorStub(20)))
+
+        self.assertEqual(pages, [8, 9, 10, 11, 12])
+
+    def test_window_sticks_to_start(self):
+        pages = list(pagination_window(PageStub(1), PaginatorStub(20)))
+
+        self.assertEqual(pages, [1, 2, 3, 4, 5])
+
+    def test_window_sticks_to_end(self):
+        pages = list(pagination_window(PageStub(20), PaginatorStub(20)))
+
+        self.assertEqual(pages, [16, 17, 18, 19, 20])
 
 
 class ParkingSpotUrlTests(TestCase):
