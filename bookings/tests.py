@@ -1,9 +1,18 @@
 import pytest
 import datetime
+from datetime import date, time, timedelta
 
 from django.core.exceptions import ValidationError
 
 from bookings.models import Booking
+from bookings.forms import BookingForm
+from django.contrib.auth import get_user_model
+from spots.models import ParkingSpot
+from django.test import TestCase
+from django.contrib.auth.models import User
+from django.urls import reverse
+from unittest.mock import patch
+from bookings.views import busy_hours_for
 
 print("BOOKINGS TESTS LOADED")
 
@@ -618,5 +627,133 @@ class BookingDeleteViewTests(TestCase):
 
 @pytest.mark.django_db
 class TestBookingForm:
-    # TODO PIXELS-022
-    pass
+    def create_spot(self):
+        return ParkingSpot.objects.create(number='A1', description='Test spot', is_active=True)
+
+    def create_user(self):
+        User = get_user_model()
+        return User.objects.create_user(username='u1', email='u1@example.com', password='pw12345')
+
+    def build_form(self, user, data):
+        form = BookingForm(data=data)
+        form.instance.user = user
+        return form
+
+    def test_booking_form_valid_data_creates_booking(self):
+        spot = self.create_spot()
+        user = self.create_user()
+
+        d = date.today() + timedelta(days=1)
+        data = {
+            'date': d,
+            'parking_spot': spot.pk,
+            'start_time': time(9, 0),
+            'end_time': time(11, 0),
+        }
+        form = self.build_form(user, data)
+        assert form.is_valid(), form.errors
+        booking = form.save(commit=False)
+        booking.user = user
+        booking.save()
+
+        assert Booking.objects.filter(parking_spot=spot, user=user, date=d).exists()
+
+    def test_booking_form_end_time_before_start_invalid(self):
+        spot = self.create_spot()
+        d = date.today() + timedelta(days=1)
+        data = {
+            'date': d,
+            'parking_spot': spot.pk,
+            'start_time': time(12, 0),
+            'end_time': time(10, 0),
+        }
+        form = self.build_form(self.create_user(), data)
+        assert not form.is_valid()
+
+    def test_booking_form_overlapping_booking_invalid(self):
+        spot = self.create_spot()
+        user1 = self.create_user()
+        User = get_user_model()
+        user2 = User.objects.create_user(username='u2', email='u2@example.com', password='pw12345')
+
+        d = date.today() + timedelta(days=1)
+        Booking.objects.create(user=user1, parking_spot=spot, date=d, start_time=time(10, 0), end_time=time(12, 0))
+
+        data = {
+            'date': d,
+            'parking_spot': spot.pk,
+            'start_time': time(11, 0),
+            'end_time': time(13, 0),
+        }
+        form = self.build_form(user2, data)
+        assert not form.is_valid()
+
+    def test_day_limit_blocks_over_8_hours(self):
+        spot = self.create_spot()
+        user = self.create_user()
+
+        d = date.today() + timedelta(days=2)
+        Booking.objects.create(user=user, parking_spot=spot, date=d, start_time=time(8, 0), end_time=time(12, 0))
+        Booking.objects.create(user=user, parking_spot=spot, date=d, start_time=time(12, 0), end_time=time(16, 0))
+
+        data = {
+            'date': d,
+            'parking_spot': spot.pk,
+            'start_time': time(16, 0),
+            'end_time': time(18, 0),
+        }
+        form = self.build_form(user, data)
+        assert not form.is_valid()
+
+    def test_week_limit_blocks_over_16_hours(self):
+        spot = self.create_spot()
+        user = self.create_user()
+
+        base = date.today() + timedelta(days=1)
+        monday = base - timedelta(days=base.weekday())
+
+        Booking.objects.create(user=user, parking_spot=spot, date=monday, start_time=time(8, 0), end_time=time(16, 0))
+        Booking.objects.create(user=user, parking_spot=spot, date=monday + timedelta(days=1), start_time=time(8, 0), end_time=time(16, 0))
+
+        d = monday + timedelta(days=2)
+        data = {
+            'date': d,
+            'parking_spot': spot.pk,
+            'start_time': time(9, 0),
+            'end_time': time(10, 0),
+        }
+        form = self.build_form(user, data)
+        assert not form.is_valid()
+
+    def test_cancelled_bookings_not_counted(self):
+        spot = self.create_spot()
+        user = self.create_user()
+
+        d = date.today() + timedelta(days=3)
+
+        Booking.objects.create(user=user, parking_spot=spot, date=d, start_time=time(8, 0), end_time=time(12, 0), status='active')
+        Booking.objects.create(user=user, parking_spot=spot, date=d, start_time=time(12, 0), end_time=time(16, 0), status='cancelled')
+
+        data = {
+            'date': d,
+            'parking_spot': spot.pk,
+            'start_time': time(16, 0),
+            'end_time': time(20, 0),
+        }
+        form = self.build_form(user, data)
+        assert form.is_valid(), form.errors
+
+
+    def test_cannot_book_in_past(self):
+        spot = self.create_spot()
+        user = self.create_user()
+        d = date.today() - timedelta(days=1)
+        data = {
+            'date': d,
+            'parking_spot': spot.pk,
+            'start_time': time(10, 0),
+            'end_time': time(11, 0),
+        }
+        form = self.build_form(user, data)
+        assert not form.is_valid()
+
