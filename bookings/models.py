@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 
 from core.models import TimeStampedModel
 from spots.models import ParkingSpot
@@ -36,6 +37,9 @@ class Booking(TimeStampedModel):
     def clean(self):
         if not self.date or not self.start_time or not self.end_time:
             return
+
+        if self.date < timezone.localdate():
+            raise ValidationError('Нельзя бронировать на прошедшую дату.')
 
         if self.end_time <= self.start_time:
             raise ValidationError('Время окончания должно быть позже начала.')
