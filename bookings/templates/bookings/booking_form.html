@@ -31,7 +31,7 @@
 
     <div class="mb-4">
       <label for="{{ form.date.id_for_label }}" class="form-label fw-medium">Дата</label>
-      <input type="date" name="{{ form.date.html_name }}" id="{{ form.date.id_for_label }}" value="{{ form.date.value|default:''|stringformat:'s' }}" class="form-control{% if form.date.errors %} is-invalid{% endif %}" style="max-width:240px" required>
+      <input type="date" name="{{ form.date.html_name }}" id="{{ form.date.id_for_label }}" value="{{ form.date.value|default:''|stringformat:'s' }}" min="{% now 'Y-m-d' %}" class="form-control{% if form.date.errors %} is-invalid{% endif %}" style="max-width:240px" required>
       {% for error in form.date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>
 
@@ -47,7 +47,7 @@
 
     <div class="mb-3">
       <label class="form-label fw-medium d-block">Время</label>
-      <div class="slot-grid" id="slotGrid">
+      <div class="slot-grid" id="slotGrid" data-busy-url="{% url 'bookings:busy_hours' %}">
         <button type="button" class="slot{% if busy_hours and 8 in busy_hours %} is-busy{% endif %}" data-h="8"{% if busy_hours and 8 in busy_hours %} disabled{% endif %}>08:00<small>–09:00</small></button>
         <button type="button" class="slot{% if busy_hours and 9 in busy_hours %} is-busy{% endif %}" data-h="9"{% if busy_hours and 9 in busy_hours %} disabled{% endif %}>09:00<small>–10:00</small></button>
         <button type="button" class="slot{% if busy_hours and 10 in busy_hours %} is-busy{% endif %}" data-h="10"{% if busy_hours and 10 in busy_hours %} disabled{% endif %}>10:00<small>–11:00</small></button>
@@ -63,8 +63,7 @@
         <button type="button" class="slot{% if busy_hours and 20 in busy_hours %} is-busy{% endif %}" data-h="20"{% if busy_hours and 20 in busy_hours %} disabled{% endif %}>20:00<small>–21:00</small></button>
         <button type="button" class="slot{% if busy_hours and 21 in busy_hours %} is-busy{% endif %}" data-h="21"{% if busy_hours and 21 in busy_hours %} disabled{% endif %}>21:00<small>–22:00</small></button>
       </div>
-      {% for error in form.start_time.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-      {% for error in form.end_time.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+      {% if form.start_time.errors or form.end_time.errors %}<div class="invalid-feedback d-block">Выберите время в сетке слотов.</div>{% endif %}
     </div>
 
     <input type="hidden" name="{{ form.start_time.html_name }}" value="{{ form.start_time.value|default:''|stringformat:'s' }}">

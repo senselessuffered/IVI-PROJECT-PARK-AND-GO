@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError, PermissionDenied
+from django.http import JsonResponse
 from django.urls import reverse
 from django.views.generic import CreateView, ListView, RedirectView, UpdateView, DetailView, View
 from django.shortcuts import get_object_or_404, redirect
@@ -35,6 +36,11 @@ class BookingListView(LoginRequiredMixin, SafePaginationMixin, ListView):
         if query:
             queryset = queryset.filter(parking_spot__number__icontains=query)
         return queryset
+
+
+class BusyHoursView(LoginRequiredMixin, View):
+    def get(self, request):
+        return JsonResponse({'busy': busy_hours_for(request.GET.get('spot'), request.GET.get('date'))})
 
 
 class BookingDetailView(LoginRequiredMixin, DetailView):
