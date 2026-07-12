@@ -28,6 +28,14 @@ class Command(BaseCommand):
             booking = reminder.booking
             user = booking.user
 
+            if not user.email:
+                self.stderr.write(
+                    self.style.WARNING(
+                        f"Пропущено: у пользователя {user.username} нет email (бронь №{booking.pk})."
+                    )
+                )
+                continue
+
             subject = "Напоминание о бронировании"
 
             message = (

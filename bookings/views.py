@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.http import JsonResponse
 from django.urls import reverse
-from django.views.generic import CreateView, ListView, RedirectView, UpdateView, DetailView, View
+from django.views.generic import CreateView, ListView, UpdateView, DetailView, View
 from django.shortcuts import get_object_or_404, redirect
 
 from bookings.forms import BookingForm

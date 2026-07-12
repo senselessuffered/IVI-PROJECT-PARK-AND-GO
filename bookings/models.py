@@ -1,12 +1,25 @@
 from datetime import datetime, timedelta
 
 from django.conf import settings
+from django.contrib.postgres.constraints import ExclusionConstraint
+from django.contrib.postgres.fields import DateTimeRangeField, RangeOperators
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
 from core.models import TimeStampedModel
 from spots.models import ParkingSpot
+
+
+class DateTimeCombine(models.Func):
+    arg_joiner = ' + '
+    template = '(%(expressions)s)'
+    output_field = models.DateTimeField()
+
+
+class TsRange(models.Func):
+    function = 'TSRANGE'
+    output_field = DateTimeRangeField()
 
 
 class Booking(TimeStampedModel):
@@ -24,6 +37,22 @@ class Booking(TimeStampedModel):
 
     class Meta:
         ordering = ('-date', 'start_time')
+        constraints = [
+            ExclusionConstraint(
+                name='exclude_overlapping_active_bookings',
+                expressions=[
+                    ('parking_spot', RangeOperators.EQUAL),
+                    (
+                        TsRange(
+                            DateTimeCombine('date', 'start_time'),
+                            DateTimeCombine('date', 'end_time'),
+                        ),
+                        RangeOperators.OVERLAPS,
+                    ),
+                ],
+                condition=models.Q(status='active'),
+            ),
+        ]
 
     def __str__(self):
         return f'{self.parking_spot} {self.date}'
