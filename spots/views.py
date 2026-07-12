@@ -1,5 +1,6 @@
 from django.views.generic import DetailView, ListView
 
+from bookings.models import BookingStatus
 from core.mixins import SafePaginationMixin
 from spots.models import ParkingSpot
 
@@ -26,6 +27,9 @@ class ParkingSpotDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['active_bookings'] = (
-            self.object.bookings.filter(status='active').select_related('user').order_by('date', 'start_time')
+            self.object.bookings
+            .filter(status=BookingStatus.ACTIVE)
+            .select_related('user')
+            .order_by('date', 'start_time')
         )
         return context

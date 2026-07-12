@@ -14,8 +14,6 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [host for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host]
 
-ADMIN_URL = os.getenv('ADMIN_URL', 'secure-adm1n/')
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

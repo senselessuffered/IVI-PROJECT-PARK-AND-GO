@@ -3,6 +3,24 @@
 from django.db import migrations, models
 
 
+def create_demo_parking_spots(apps, schema_editor):
+    parking_spot = apps.get_model('spots', 'ParkingSpot')
+
+    for number in range(1, 51):
+        parking_spot.objects.get_or_create(
+            number=f'P-{number:03d}',
+            defaults={
+                'description': 'Демо-место для тестового показа',
+                'is_active': True,
+            },
+        )
+
+
+def delete_demo_parking_spots(apps, schema_editor):
+    parking_spot = apps.get_model('spots', 'ParkingSpot')
+    parking_spot.objects.filter(number__in=[f'P-{number:03d}' for number in range(1, 51)]).delete()
+
+
 class Migration(migrations.Migration):
 
     initial = True
@@ -19,6 +37,11 @@ class Migration(migrations.Migration):
                 ('description', models.TextField(blank=True)),
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
             ],
+            options={
+                'ordering': ('number',),
+            },
         ),
+        migrations.RunPython(create_demo_parking_spots, delete_demo_parking_spots),
     ]

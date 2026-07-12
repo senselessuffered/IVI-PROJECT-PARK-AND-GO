@@ -1,8 +1,8 @@
-from django.core.management.base import BaseCommand
 from django.core.mail import send_mail
+from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from bookings.models import Reminder
+from bookings.models import BookingStatus, Reminder
 
 
 class Command(BaseCommand):
@@ -16,7 +16,7 @@ class Command(BaseCommand):
             .filter(
                 is_sent=False,
                 scheduled_for__lte=now,
-                booking__status="active",
+                booking__status=BookingStatus.ACTIVE,
             )
         )
 
