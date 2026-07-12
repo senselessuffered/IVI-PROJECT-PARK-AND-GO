@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, redirect
 from bookings.forms import BookingForm
 from bookings.models import Booking
 from core.mixins import SafePaginationMixin
+from spots.models import ParkingSpot
 
 
 def busy_hours_for(parking_spot_id, day, exclude_pk=None):
@@ -38,9 +39,34 @@ class BookingListView(LoginRequiredMixin, SafePaginationMixin, ListView):
         return queryset
 
 
+def free_spot_ids(day, start, end, exclude_pk=None):
+    active = ParkingSpot.objects.filter(is_active=True)
+    if not day or not start or not end:
+        return list(active.values_list('id', flat=True))
+    try:
+        busy = Booking.objects.filter(status='active', date=day, start_time__lt=end, end_time__gt=start)
+        if exclude_pk:
+            busy = busy.exclude(pk=exclude_pk)
+        return list(active.exclude(id__in=busy.values_list('parking_spot_id', flat=True)).values_list('id', flat=True))
+    except (ValueError, TypeError, ValidationError):
+        return list(active.values_list('id', flat=True))
+
+
 class BusyHoursView(LoginRequiredMixin, View):
     def get(self, request):
-        return JsonResponse({'busy': busy_hours_for(request.GET.get('spot'), request.GET.get('date'))})
+        busy = busy_hours_for(request.GET.get('spot'), request.GET.get('date'), request.GET.get('exclude'))
+        return JsonResponse({'busy': busy})
+
+
+class FreeSpotsView(LoginRequiredMixin, View):
+    def get(self, request):
+        free = free_spot_ids(
+            request.GET.get('date'),
+            request.GET.get('start'),
+            request.GET.get('end'),
+            request.GET.get('exclude'),
+        )
+        return JsonResponse({'free': free})
 
 
 class BookingDetailView(LoginRequiredMixin, DetailView):

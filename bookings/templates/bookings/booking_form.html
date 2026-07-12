@@ -47,7 +47,7 @@
 
     <div class="mb-3">
       <label class="form-label fw-medium d-block">Время</label>
-      <div class="slot-grid" id="slotGrid" data-busy-url="{% url 'bookings:busy_hours' %}">
+      <div class="slot-grid" id="slotGrid" data-busy-url="{% url 'bookings:busy_hours' %}" data-free-url="{% url 'bookings:free_spots' %}" data-exclude-pk="{{ form.instance.pk|default:'' }}">
         <button type="button" class="slot{% if busy_hours and 8 in busy_hours %} is-busy{% endif %}" data-h="8"{% if busy_hours and 8 in busy_hours %} disabled{% endif %}>08:00<small>–09:00</small></button>
         <button type="button" class="slot{% if busy_hours and 9 in busy_hours %} is-busy{% endif %}" data-h="9"{% if busy_hours and 9 in busy_hours %} disabled{% endif %}>09:00<small>–10:00</small></button>
         <button type="button" class="slot{% if busy_hours and 10 in busy_hours %} is-busy{% endif %}" data-h="10"{% if busy_hours and 10 in busy_hours %} disabled{% endif %}>10:00<small>–11:00</small></button>
