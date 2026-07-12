@@ -12,10 +12,11 @@ class Command(BaseCommand):
         now = timezone.now()
 
         reminders = (
-            Reminder.objects.select_related("booking", "booking__user")
+            Reminder.objects.select_related("booking", "booking__user", "booking__parking_spot")
             .filter(
                 is_sent=False,
                 scheduled_for__lte=now,
+                booking__status="active",
             )
         )
 
