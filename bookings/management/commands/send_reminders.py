@@ -1,8 +1,8 @@
-from django.core.management.base import BaseCommand
 from django.core.mail import send_mail
+from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from bookings.models import Reminder
+from bookings.models import BookingStatus, Reminder
 
 
 class Command(BaseCommand):
@@ -12,10 +12,11 @@ class Command(BaseCommand):
         now = timezone.now()
 
         reminders = (
-            Reminder.objects.select_related("booking", "booking__user")
+            Reminder.objects.select_related("booking", "booking__user", "booking__parking_spot")
             .filter(
                 is_sent=False,
                 scheduled_for__lte=now,
+                booking__status=BookingStatus.ACTIVE,
             )
         )
 
@@ -26,6 +27,14 @@ class Command(BaseCommand):
         for reminder in reminders:
             booking = reminder.booking
             user = booking.user
+
+            if not user.email:
+                self.stderr.write(
+                    self.style.WARNING(
+                        f"Пропущено: у пользователя {user.username} нет email (бронь №{booking.pk})."
+                    )
+                )
+                continue
 
             subject = "Напоминание о бронировании"
 

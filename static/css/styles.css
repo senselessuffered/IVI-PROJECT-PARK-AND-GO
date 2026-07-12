@@ -234,6 +234,16 @@ a:hover { color: var(--pg-accent-dark); }
   text-align: center;
   margin-bottom: 1.5rem;
 }
+.password-field .password-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  padding-inline: 0;
+}
+.password-field .password-toggle:focus {
+  box-shadow: 0 0 0 .2rem rgba(47, 95, 224, .15);
+}
 
 .app-footer {
   flex-shrink: 0;

@@ -1,12 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import JsonResponse
-from django.urls import reverse
-from django.views.generic import CreateView, ListView, RedirectView, UpdateView, DetailView, View
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
+from django.views.generic import CreateView, DetailView, ListView, UpdateView, View
 
 from bookings.forms import BookingForm
-from bookings.models import Booking
+from bookings.models import Booking, BookingStatus
 from core.mixins import SafePaginationMixin
 from spots.models import ParkingSpot
 
@@ -15,7 +15,7 @@ def busy_hours_for(parking_spot_id, day, exclude_pk=None):
     if not parking_spot_id or not day:
         return []
     try:
-        bookings = Booking.objects.filter(parking_spot_id=parking_spot_id, date=day, status='active')
+        bookings = Booking.objects.filter(parking_spot_id=parking_spot_id, date=day, status=BookingStatus.ACTIVE)
         if exclude_pk:
             bookings = bookings.exclude(pk=exclude_pk)
         hours = []
@@ -44,7 +44,7 @@ def free_spot_ids(day, start, end, exclude_pk=None):
     if not day or not start or not end:
         return list(active.values_list('id', flat=True))
     try:
-        busy = Booking.objects.filter(status='active', date=day, start_time__lt=end, end_time__gt=start)
+        busy = Booking.objects.filter(status=BookingStatus.ACTIVE, date=day, start_time__lt=end, end_time__gt=start)
         if exclude_pk:
             busy = busy.exclude(pk=exclude_pk)
         return list(active.exclude(id__in=busy.values_list('parking_spot_id', flat=True)).values_list('id', flat=True))
@@ -153,8 +153,8 @@ class BookingCancelView(LoginRequiredMixin, View):
         if booking.user != request.user:
             raise PermissionDenied
 
-        if booking.status == 'active':
-            booking.status = 'cancelled'
+        if booking.is_active:
+            booking.status = BookingStatus.CANCELLED
             booking.save(update_fields=['status'])
 
         return redirect(

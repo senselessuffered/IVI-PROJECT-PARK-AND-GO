@@ -6,6 +6,8 @@ from django.urls import reverse
 from bookings.models import Booking
 from spots.models import ParkingSpot
 
+from spots.models import ParkingSpot
+from spots.templatetags.pagination import pagination_window
 
 @pytest.mark.django_db
 class TestParkingSpot:

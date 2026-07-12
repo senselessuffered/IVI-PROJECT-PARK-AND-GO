@@ -1,8 +1,9 @@
-import pytest
 import datetime
 from datetime import date, time, timedelta
 from unittest.mock import patch
 
+import pytest
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.forms import HiddenInput
 from django.test import TestCase
@@ -129,6 +130,26 @@ class TestBookingModel:
             booking.clean()
 
         assert "Недельный лимит" in str(exc.value)
+
+    def test_cancelled_booking_skips_active_booking_limits(self, user, parking_spot):
+        Booking.objects.create(
+            user=user,
+            parking_spot=parking_spot,
+            date=datetime.date(2030, 7, 11),
+            start_time=datetime.time(8, 0),
+            end_time=datetime.time(16, 0),
+        )
+
+        booking = Booking(
+            user=user,
+            parking_spot=parking_spot,
+            date=datetime.date(2020, 7, 11),
+            start_time=datetime.time(16, 0),
+            end_time=datetime.time(17, 0),
+            status=BookingStatus.CANCELLED,
+        )
+
+        booking.clean()
 
 
 
@@ -555,9 +576,10 @@ class BookingUpdateViewTests(TestCase):
             username='other',
             password='testpass123',
         )
+        other_spot = ParkingSpot.objects.create(number='A2')
         other_booking = Booking.objects.create(
             user=other_user,
-            parking_spot=self.spot,
+            parking_spot=other_spot,
             date=date(2030, 1, 1),
             start_time=time(10),
             end_time=time(12),
