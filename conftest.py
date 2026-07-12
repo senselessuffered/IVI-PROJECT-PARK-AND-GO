@@ -10,6 +10,7 @@ def user(db):
 
     return User.objects.create_user(
         username="testuser",
+        email="testuser@example.com",
         password="password123"
     )
 
