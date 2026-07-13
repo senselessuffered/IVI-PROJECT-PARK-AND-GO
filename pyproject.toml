@@ -39,3 +39,4 @@ select = ["E", "F", "I"]
 
 [tool.ruff.lint.per-file-ignores]
 "application/settings/__init__.py" = ["F403", "I001"]
+"application/settings/test.py" = ["F403"]
