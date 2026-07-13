@@ -31,7 +31,7 @@
 
     <div class="mb-4">
       <label for="{{ form.date.id_for_label }}" class="form-label fw-medium">Дата</label>
-      <input type="date" name="{{ form.date.html_name }}" id="{{ form.date.id_for_label }}" value="{{ form.date.value|default:''|stringformat:'s' }}" min="{% now 'Y-m-d' %}" class="form-control{% if form.date.errors %} is-invalid{% endif %}" style="max-width:240px" required>
+      <input type="date" name="{{ form.date.html_name }}" id="{{ form.date.id_for_label }}" value="{{ form.date.value|default:''|stringformat:'s' }}" min="{{ min_date|date:'Y-m-d' }}" max="{{ max_date|date:'Y-m-d' }}" class="form-control{% if form.date.errors %} is-invalid{% endif %}" style="max-width:240px" required>
       {% for error in form.date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>
 

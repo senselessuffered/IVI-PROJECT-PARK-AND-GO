@@ -129,10 +129,12 @@ class TestBookingModel:
         assert "Недельный лимит" in str(exc.value)
 
     def test_cancelled_booking_skips_active_booking_limits(self, user, parking_spot):
+        day = datetime.date.today() + datetime.timedelta(days=5)
+
         Booking.objects.create(
             user=user,
             parking_spot=parking_spot,
-            date=datetime.date(2030, 7, 11),
+            date=day,
             start_time=datetime.time(8, 0),
             end_time=datetime.time(16, 0),
             status='cancelled',
@@ -141,12 +143,26 @@ class TestBookingModel:
         booking = Booking(
             user=user,
             parking_spot=parking_spot,
-            date=datetime.date(2030, 7, 11),
+            date=day,
             start_time=datetime.time(16, 0),
             end_time=datetime.time(17, 0),
         )
 
         booking.clean()
+
+    def test_booking_further_than_month_ahead_is_invalid(self, user, parking_spot):
+        booking = Booking(
+            user=user,
+            parking_spot=parking_spot,
+            date=datetime.date.today() + datetime.timedelta(days=40),
+            start_time=datetime.time(8, 0),
+            end_time=datetime.time(9, 0),
+        )
+
+        with pytest.raises(ValidationError) as exc:
+            booking.clean()
+
+        assert "месяц" in str(exc.value)
 
 
 
@@ -457,7 +473,7 @@ class BookingCreateViewTests(TestCase):
             reverse('bookings:create'),
             {
                 'parking_spot': self.spot.pk,
-                'date': '2030-01-01',
+                'date': (date.today() + timedelta(days=1)).strftime('%Y-%m-%d'),
                 'start_time': '10:00',
                 'end_time': '12:00',
             },
@@ -475,7 +491,7 @@ class BookingCreateViewTests(TestCase):
             reverse('bookings:create'),
             {
                 'parking_spot': self.spot.pk,
-                'date': '2030-01-01',
+                'date': (date.today() + timedelta(days=1)).strftime('%Y-%m-%d'),
                 'start_time': '10:00',
                 'end_time': '12:00',
             },
@@ -503,7 +519,7 @@ class BookingCreateViewTests(TestCase):
             reverse('bookings:create'),
             {
                 'parking_spot': self.spot.pk,
-                'date': '2030-01-01',
+                'date': (date.today() + timedelta(days=1)).strftime('%Y-%m-%d'),
                 'start_time': '10:00',
                 'end_time': '12:00',
             },
@@ -548,12 +564,13 @@ class BookingUpdateViewTests(TestCase):
         self.assertTemplateUsed(response, 'bookings/booking_form.html')
 
     def test_update_booking(self):
+        new_date = (date.today() + timedelta(days=2)).strftime('%Y-%m-%d')
         self.client.login(username='user', password='testpass123')
         response = self.client.post(
             reverse('bookings:edit', kwargs={'pk': self.booking.pk}),
             {
                 'parking_spot': self.spot.pk,
-                'date': '2030-01-02',
+                'date': new_date,
                 'start_time': '11:00',
                 'end_time': '13:00',
             },
@@ -564,7 +581,7 @@ class BookingUpdateViewTests(TestCase):
             response,
             reverse('bookings:detail', kwargs={'pk': self.booking.pk})
         )
-        self.assertEqual(self.booking.date.strftime('%Y-%m-%d'), '2030-01-02')
+        self.assertEqual(self.booking.date.strftime('%Y-%m-%d'), new_date)
         self.assertEqual(self.booking.start_time.strftime('%H:%M'), '11:00')
         self.assertEqual(self.booking.end_time.strftime('%H:%M'), '13:00')
 

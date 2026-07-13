@@ -16,6 +16,11 @@ MAX_WEEKLY_BOOKING_HOURS = 16
 DAILY_BOOKING_LIMIT = timedelta(hours=MAX_DAILY_BOOKING_HOURS)
 WEEKLY_BOOKING_LIMIT = timedelta(hours=MAX_WEEKLY_BOOKING_HOURS)
 
+SLOT_START_HOUR = 8
+SLOT_END_HOUR = 22
+
+MAX_BOOKING_AHEAD_DAYS = 30
+
 
 class DateTimeCombine(models.Func):
     arg_joiner = ' + '
@@ -111,6 +116,9 @@ class Booking(TimeStampedModel):
         week_duration = self._total_duration(mine.filter(date__range=(week_start, week_end)))
         if week_duration + self.duration > WEEKLY_BOOKING_LIMIT:
             raise ValidationError(f'Недельный лимит {MAX_WEEKLY_BOOKING_HOURS} часов превышен.')
+
+        if self.date > timezone.localdate() + timedelta(days=MAX_BOOKING_AHEAD_DAYS):
+            raise ValidationError('Бронировать можно не более чем на месяц вперёд.')
 
     @staticmethod
     def _total_duration(queryset):
