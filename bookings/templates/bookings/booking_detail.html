@@ -36,7 +36,7 @@
   </div>
 
   {% if request.user == booking.user %}
-  <div class="d-flex flex-wrap gap-2">
+  <div class="d-flex flex-wrap gap-2 action-row">
     {% if booking.is_active %}
     <a href="{% url 'bookings:edit' booking.pk %}" class="btn btn-primary">Редактировать</a>
     <form method="post" action="{% url 'bookings:cancel' booking.pk %}" class="d-inline">
