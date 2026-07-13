@@ -182,3 +182,76 @@ class TestParkingSpotCalendar:
 
         assert response.context['month_date'].year == today.year
         assert response.context['month_date'].month == today.month
+
+
+@pytest.mark.django_db
+class TestWeeklyReport:
+    def report_url(self):
+        return reverse('admin:spots_parkingspot_weekly_report')
+
+    def make_superuser(self):
+        User = get_user_model()
+        return User.objects.create_superuser(
+            username='root', email='root@example.com', password='password123'
+        )
+
+    def test_superuser_gets_csv(self, client, parking_spot):
+        client.force_login(self.make_superuser())
+
+        response = client.get(self.report_url())
+
+        assert response.status_code == 200
+        assert 'text/csv' in response['Content-Type']
+        assert 'attachment' in response['Content-Disposition']
+
+    def test_report_counts_active_hours(self, client, user, parking_spot):
+        today = datetime.date.today()
+        week_start = today - datetime.timedelta(days=today.weekday())
+        Booking.objects.create(
+            user=user,
+            parking_spot=parking_spot,
+            date=week_start + datetime.timedelta(days=2),
+            start_time=datetime.time(10),
+            end_time=datetime.time(14),
+        )
+        client.force_login(self.make_superuser())
+
+        response = client.get(self.report_url())
+
+        content = response.content.decode('utf-8')
+        row = next(line for line in content.splitlines() if line.startswith('A-001'))
+        cells = row.split(';')
+        assert cells[3] == '4'
+        assert cells[8] == '4'
+
+    def test_cancelled_booking_not_counted(self, client, user, parking_spot):
+        today = datetime.date.today()
+        week_start = today - datetime.timedelta(days=today.weekday())
+        Booking.objects.create(
+            user=user,
+            parking_spot=parking_spot,
+            date=week_start + datetime.timedelta(days=2),
+            start_time=datetime.time(10),
+            end_time=datetime.time(14),
+            status='cancelled',
+        )
+        client.force_login(self.make_superuser())
+
+        response = client.get(self.report_url())
+
+        content = response.content.decode('utf-8')
+        row = next(line for line in content.splitlines() if line.startswith('A-001'))
+        cells = row.split(';')
+        assert cells[8] == '0'
+
+    def test_regular_user_denied(self, client, user, parking_spot):
+        client.force_login(user)
+
+        response = client.get(self.report_url())
+
+        assert response.status_code in (302, 403)
+
+    def test_anonymous_redirected(self, client, parking_spot):
+        response = client.get(self.report_url())
+
+        assert response.status_code == 302
