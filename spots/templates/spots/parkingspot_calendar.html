@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Календарь загруженности — {{ spot.number }} — Парк-и-Гоу{% endblock %}
+
+{% block container_extra %} container-narrow{% endblock %}
+
+{% block content %}
+  <a href="{% url 'spots:detail' spot.pk %}" class="text-decoration-none d-inline-block mb-3">← К месту {{ spot.number }}</a>
+
+  <div class="page-head">
+    <div>
+      <h1>Календарь загруженности</h1>
+      <p class="page-sub">Место {{ spot.number }}</p>
+    </div>
+  </div>
+
+  <div class="panel panel-pad">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      {% if prev_disabled %}
+      <span class="btn btn-outline-secondary btn-sm disabled" aria-disabled="true">← Пред.</span>
+      {% else %}
+      <a href="{% url 'spots:calendar' spot.pk %}?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-outline-secondary btn-sm">← Пред.</a>
+      {% endif %}
+      <h2 class="h5 mb-0">{{ month_date|date:'F Y'|capfirst }}</h2>
+      {% if next_disabled %}
+      <span class="btn btn-outline-secondary btn-sm disabled" aria-disabled="true">След. →</span>
+      {% else %}
+      <a href="{% url 'spots:calendar' spot.pk %}?year={{ next_year }}&month={{ next_month }}" class="btn btn-outline-secondary btn-sm">След. →</a>
+      {% endif %}
+    </div>
+
+    <div class="cal-legend mb-3">
+      <span class="cal-legend-item"><span class="cal-dot cal-dot-free"></span>Свободно</span>
+      <span class="cal-legend-item"><span class="cal-dot cal-dot-partial"></span>Частично занято</span>
+      <span class="cal-legend-item"><span class="cal-dot cal-dot-full"></span>Занято</span>
+    </div>
+
+    <div class="cal-grid">
+      {% for weekday in weekdays %}
+      <div class="cal-weekday">{{ weekday }}</div>
+      {% endfor %}
+
+      {% for week in weeks %}
+        {% for cell in week %}
+          {% if cell %}
+            {% if cell.clickable %}
+            <a href="{% url 'bookings:create' %}?spot={{ spot.pk }}&date={{ cell.date|date:'Y-m-d' }}" class="cal-day cal-day-{{ cell.status }}">{{ cell.day }}</a>
+            {% else %}
+            <div class="cal-day cal-day-{{ cell.status }}">{{ cell.day }}</div>
+            {% endif %}
+          {% else %}
+          <div class="cal-day cal-day-empty"></div>
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

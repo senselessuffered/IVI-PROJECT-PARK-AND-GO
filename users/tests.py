@@ -1,5 +1,8 @@
+import re
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.views import LoginView, LogoutView
+from django.core import mail
 from django.core.exceptions import ValidationError
 from django.test import Client, TestCase
 from django.urls import resolve, reverse
@@ -358,3 +361,63 @@ class IntegrationTests(TestCase):
         response = self.client.get(reverse('bookings:list'))
 
         self.assertTrue(response.wsgi_request.user.is_authenticated)
+
+
+class PasswordResetTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='bob',
+            email='bob@example.com',
+            password='oldpass12345',
+        )
+
+    def reset_path_from_email(self, body):
+        match = re.search(r'/accounts/reset/[^\s]+', body)
+        return match.group(0)
+
+    def test_reset_form_available(self):
+        response = self.client.get(reverse('users:password_reset'))
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_reset_sends_email_to_known_address(self):
+        response = self.client.post(
+            reverse('users:password_reset'),
+            {'email': 'bob@example.com'},
+        )
+
+        self.assertRedirects(response, reverse('users:password_reset_done'))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('bob@example.com', mail.outbox[0].to)
+
+    def test_reset_unknown_email_sends_nothing(self):
+        response = self.client.post(
+            reverse('users:password_reset'),
+            {'email': 'nobody@example.com'},
+        )
+
+        self.assertRedirects(response, reverse('users:password_reset_done'))
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_full_flow_allows_login_with_new_password(self):
+        self.client.post(
+            reverse('users:password_reset'),
+            {'email': 'bob@example.com'},
+        )
+        confirm_path = self.reset_path_from_email(mail.outbox[0].body)
+
+        set_password_response = self.client.get(confirm_path)
+        self.assertEqual(set_password_response.status_code, 302)
+
+        response = self.client.post(
+            set_password_response.url,
+            {
+                'new_password1': 'brandnew98765',
+                'new_password2': 'brandnew98765',
+            },
+        )
+
+        self.assertRedirects(response, reverse('users:password_reset_complete'))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('brandnew98765'))

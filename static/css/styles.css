@@ -1402,3 +1402,138 @@ svg{
 .slot-summary{
     will-change:transform, backdrop-filter;
 }
+
+.btn-calendar{
+    background:rgba(255,255,255,.05);
+    border:1.5px solid rgba(255,196,0,.55);
+    box-shadow:0 6px 20px rgba(255,196,0,.12);
+}
+
+.btn-calendar:hover{
+    border-color:rgba(255,196,0,.85);
+    background:rgba(255,196,0,.08);
+    box-shadow:0 12px 30px rgba(255,196,0,.2);
+}
+
+.btn-calendar .btn-calendar-label{
+    position:relative;
+    z-index:1;
+    font-weight:700;
+
+    background:linear-gradient(135deg,#2ecc71,#ffc400,#E60042);
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-text-fill-color:transparent;
+    color:transparent;
+}
+
+.cal-legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:1.25rem;
+}
+
+.cal-legend-item{
+    display:inline-flex;
+    align-items:center;
+    gap:.5rem;
+    color:rgba(255,255,255,.65);
+    font-size:.85rem;
+}
+
+.cal-dot{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    display:inline-block;
+}
+
+.cal-dot-free{
+    background:#2ecc71;
+}
+
+.cal-dot-partial{
+    background:#ffc400;
+}
+
+.cal-dot-full{
+    background:#E60042;
+}
+
+.cal-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:.5rem;
+}
+
+.cal-weekday{
+    text-align:center;
+    font-size:.75rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:rgba(255,255,255,.45);
+    padding-bottom:.25rem;
+}
+
+.cal-day{
+    aspect-ratio:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:12px;
+    font-weight:600;
+    color:#fff;
+    text-decoration:none;
+    border:1px solid rgba(255,255,255,.08);
+    background:rgba(255,255,255,.03);
+    cursor:default;
+    transition:.25s;
+}
+
+.cal-day-empty{
+    border-color:transparent;
+    background:transparent;
+}
+
+.cal-day-off{
+    background:rgba(255,255,255,.02);
+    border-color:rgba(255,255,255,.05);
+    color:rgba(255,255,255,.25);
+}
+
+.cal-day-free{
+    background:rgba(46,204,113,.15);
+    border-color:rgba(46,204,113,.3);
+}
+
+a.cal-day-free:hover{
+    background:rgba(46,204,113,.28);
+    color:#fff;
+}
+
+.cal-day-partial{
+    background:rgba(255,196,0,.18);
+    border-color:rgba(255,196,0,.35);
+}
+
+a.cal-day-partial:hover{
+    background:rgba(255,196,0,.3);
+    color:#fff;
+}
+
+.cal-day-full{
+    background:rgba(230,0,66,.18);
+    border-color:rgba(230,0,66,.35);
+}
+
+a.cal-day{
+    cursor:pointer;
+}
+
+@media(max-width:575px){
+    .cal-day{
+        border-radius:8px;
+        font-size:.85rem;
+    }
+}

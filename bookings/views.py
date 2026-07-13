@@ -1,14 +1,22 @@
+from datetime import timedelta
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils import timezone
 from django.views.generic import CreateView, DetailView, ListView, UpdateView, View
 
 from bookings.forms import BookingForm
-from bookings.models import Booking, BookingStatus
+from bookings.models import MAX_BOOKING_AHEAD_DAYS, Booking, BookingStatus
 from core.mixins import SafePaginationMixin
 from spots.models import ParkingSpot
+
+
+def booking_date_bounds():
+    today = timezone.localdate()
+    return today, today + timedelta(days=MAX_BOOKING_AHEAD_DAYS)
 
 
 def busy_hours_for(parking_spot_id, day, exclude_pk=None):
@@ -91,6 +99,9 @@ class BookingCreateView(LoginRequiredMixin, CreateView):
         spot = self.request.GET.get('spot')
         if spot:
             initial['parking_spot'] = spot
+        day = self.request.GET.get('date')
+        if day:
+            initial['date'] = day
         return initial
 
     def get_form(self, form_class=None):
@@ -102,6 +113,7 @@ class BookingCreateView(LoginRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         form = context['form']
         context['busy_hours'] = busy_hours_for(form['parking_spot'].value(), form['date'].value())
+        context['min_date'], context['max_date'] = booking_date_bounds()
         return context
 
     def get_success_url(self):
@@ -136,6 +148,7 @@ class BookingUpdateView(LoginRequiredMixin, UpdateView):
             form['date'].value(),
             exclude_pk=self.object.pk,
         )
+        context['min_date'], context['max_date'] = booking_date_bounds()
 
         return context
 
