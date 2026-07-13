@@ -139,6 +139,14 @@ docker compose exec web ruff check .
 
 Связи: ForeignKey (Booking → User, Booking → ParkingSpot), OneToOne (Reminder → Booking).
 
+### ER-диаграмма базы данных
+
+![ER-диаграмма базы данных](docs/ER_diagram.png)
+
+## Декомпозиция задач
+
+Разбивка задач по участникам, часам и статусу — в [DECOMPOSITION.md](DECOMPOSITION.md).
+
 ## Скриншоты
 
 | Список мест | Бронирование | Мои брони |
@@ -151,7 +159,7 @@ docker compose exec web ruff check .
 
 ## Техническое задание
 
-См. `docs/ТЗ.pdf` (или ссылку на документ ТЗ).
+См. `docs/ТЗ.pdf`.
 
 ## Ручки
 
