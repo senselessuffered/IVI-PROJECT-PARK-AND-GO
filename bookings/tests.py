@@ -4,18 +4,15 @@ from unittest.mock import patch
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.core import mail
 from django.core.exceptions import ValidationError
-from django.forms import HiddenInput
+from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from bookings.forms import BookingForm
-from bookings.models import Booking
-from django.test import TestCase
-from django.contrib.auth.models import User
-from django.urls import reverse
-from bookings.views import busy_hours_for
+from bookings.models import Booking, Reminder
 from bookings.views import BookingCreateView, busy_hours_for
 from spots.models import ParkingSpot
 
@@ -138,15 +135,15 @@ class TestBookingModel:
             date=datetime.date(2030, 7, 11),
             start_time=datetime.time(8, 0),
             end_time=datetime.time(16, 0),
+            status='cancelled',
         )
 
         booking = Booking(
             user=user,
             parking_spot=parking_spot,
-            date=datetime.date(2020, 7, 11),
+            date=datetime.date(2030, 7, 11),
             start_time=datetime.time(16, 0),
             end_time=datetime.time(17, 0),
-            status=BookingStatus.CANCELLED,
         )
 
         booking.clean()
@@ -739,7 +736,8 @@ class TestBookingForm:
         monday = base - timedelta(days=base.weekday())
 
         Booking.objects.create(user=user, parking_spot=spot, date=monday, start_time=time(8, 0), end_time=time(16, 0))
-        Booking.objects.create(user=user, parking_spot=spot, date=monday + timedelta(days=1), start_time=time(8, 0), end_time=time(16, 0))
+        Booking.objects.create(user=user, parking_spot=spot, date=monday + timedelta(days=1),
+                               start_time=time(8, 0), end_time=time(16, 0))
 
         d = monday + timedelta(days=2)
         data = {
@@ -757,8 +755,10 @@ class TestBookingForm:
 
         d = date.today() + timedelta(days=3)
 
-        Booking.objects.create(user=user, parking_spot=spot, date=d, start_time=time(8, 0), end_time=time(12, 0), status='active')
-        Booking.objects.create(user=user, parking_spot=spot, date=d, start_time=time(12, 0), end_time=time(16, 0), status='cancelled')
+        Booking.objects.create(user=user, parking_spot=spot, date=d, start_time=time(8, 0),
+                               end_time=time(12, 0), status='active')
+        Booking.objects.create(user=user, parking_spot=spot, date=d, start_time=time(12, 0),
+                               end_time=time(16, 0), status='cancelled')
 
         data = {
             'date': d,
@@ -782,4 +782,46 @@ class TestBookingForm:
         }
         form = self.build_form(user, data)
         assert not form.is_valid()
+
+
+@pytest.mark.django_db
+class TestSendRemindersCommand:
+    def _due_reminder(self, user, parking_spot):
+        booking = Booking.objects.create(
+            user=user, parking_spot=parking_spot, date=datetime.date(2030, 7, 11),
+            start_time=datetime.time(10, 0), end_time=datetime.time(12, 0),
+        )
+        reminder = Reminder.objects.get(booking=booking)
+        reminder.scheduled_for = timezone.now() - datetime.timedelta(hours=1)
+        reminder.save(update_fields=['scheduled_for'])
+        return reminder
+
+    def test_sends_due_reminder_and_marks_it_sent(self, user, parking_spot):
+        reminder = self._due_reminder(user, parking_spot)
+
+        call_command('send_reminders')
+
+        reminder.refresh_from_db()
+        assert reminder.is_sent is True
+        assert len(mail.outbox) == 1
+        assert mail.outbox[0].to == [user.email]
+
+    def test_does_not_send_cancelled_booking_reminder(self, user, parking_spot):
+        reminder = self._due_reminder(user, parking_spot)
+        Booking.objects.filter(pk=reminder.booking_id).update(status='cancelled')
+
+        call_command('send_reminders')
+
+        reminder.refresh_from_db()
+        assert reminder.is_sent is False
+        assert len(mail.outbox) == 0
+
+    def test_does_not_resend_already_sent_reminder(self, user, parking_spot):
+        reminder = self._due_reminder(user, parking_spot)
+        reminder.is_sent = True
+        reminder.save(update_fields=['is_sent'])
+
+        call_command('send_reminders')
+
+        assert len(mail.outbox) == 0
 
