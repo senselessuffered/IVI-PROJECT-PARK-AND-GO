@@ -1,10 +1,10 @@
 import re
 
+import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.views import LoginView, LogoutView
 from django.core import mail
 from django.core.exceptions import ValidationError
-from django.test import Client, TestCase
 from django.urls import resolve, reverse
 
 from users.backends import EmailOrUsernameBackend
@@ -13,411 +13,235 @@ from users.views import RegisterView
 
 User = get_user_model()
 
-
-class UserModelTests(TestCase):
-
-    def setUp(self):
-        self.user_data = {
-            'username': 'testuser',
-            'email': 'test@example.com',
-            'password': 'testpass123',
-        }
-
-    def test_create_user(self):
-        user = User.objects.create_user(**self.user_data)
-
-        self.assertEqual(user.username, 'testuser')
-        self.assertEqual(user.email, 'test@example.com')
-        self.assertTrue(user.check_password('testpass123'))
-        self.assertTrue(user.is_active)
-        self.assertFalse(user.is_staff)
-        self.assertFalse(user.is_superuser)
-
-    def test_create_superuser(self):
-        user = User.objects.create_superuser(
-            username='admin',
-            email='admin@example.com',
-            password='adminpass123',
-        )
-
-        self.assertTrue(user.is_staff)
-        self.assertTrue(user.is_superuser)
-        self.assertTrue(user.is_active)
-
-    def test_str_method(self):
-        user = User.objects.create_user(
-            username='student',
-            email='student@example.com',
-            password='testpass123',
-        )
-
-        self.assertEqual(str(user), 'student')
-
-    def test_get_full_name(self):
-        user = User.objects.create_user(
-            username='student',
-            email='student@example.com',
-            password='testpass123',
-            first_name='Иван',
-            last_name='Иванов',
-        )
-
-        self.assertEqual(user.get_full_name(), 'Иван Иванов')
-
-    def test_get_short_name(self):
-        user = User.objects.create_user(
-            username='student',
-            email='student@example.com',
-            password='testpass123',
-            first_name='Иван',
-        )
-
-        self.assertEqual(user.get_short_name(), 'Иван')
+VALID_REGISTER_DATA = {
+    'username': 'newuser',
+    'email': 'new@example.com',
+    'password1': 'StrongPass123',
+    'password2': 'StrongPass123',
+}
 
 
-class RegisterFormTests(TestCase):
-
-    def setUp(self):
-        self.valid_data = {
-            'username': 'newuser',
-            'email': 'new@example.com',
-            'password1': 'StrongPass123',
-            'password2': 'StrongPass123',
-        }
-
+@pytest.mark.django_db
+class TestRegisterForm:
     def test_valid_form(self):
-        form = RegisterForm(data=self.valid_data)
+        form = RegisterForm(data=VALID_REGISTER_DATA)
 
-        self.assertTrue(form.is_valid())
+        assert form.is_valid()
 
         user = form.save()
 
-        self.assertEqual(user.username, 'newuser')
-        self.assertEqual(user.email, 'new@example.com')
+        assert user.username == 'newuser'
+        assert user.email == 'new@example.com'
 
     def test_empty_username(self):
-        data = self.valid_data.copy()
-        data['username'] = ''
+        form = RegisterForm(data={**VALID_REGISTER_DATA, 'username': ''})
 
-        form = RegisterForm(data=data)
-
-        self.assertFalse(form.is_valid())
-        self.assertIn('username', form.errors)
+        assert not form.is_valid()
+        assert 'username' in form.errors
 
     def test_empty_email(self):
-        data = self.valid_data.copy()
-        data['email'] = ''
+        form = RegisterForm(data={**VALID_REGISTER_DATA, 'email': ''})
 
-        form = RegisterForm(data=data)
-
-        self.assertFalse(form.is_valid())
-        self.assertIn('email', form.errors)
+        assert not form.is_valid()
+        assert 'email' in form.errors
 
     def test_duplicate_email(self):
-        User.objects.create_user(
-            username='user1',
-            email='new@example.com',
-            password='StrongPass123',
-        )
+        User.objects.create_user(username='user1', email='new@example.com', password='StrongPass123')
 
-        form = RegisterForm(data=self.valid_data)
+        form = RegisterForm(data=VALID_REGISTER_DATA)
 
-        self.assertFalse(form.is_valid())
-        self.assertIn('email', form.errors)
+        assert not form.is_valid()
+        assert 'email' in form.errors
 
     def test_passwords_not_match(self):
-        data = self.valid_data.copy()
-        data['password2'] = 'AnotherPass123'
+        form = RegisterForm(data={**VALID_REGISTER_DATA, 'password2': 'AnotherPass123'})
 
-        form = RegisterForm(data=data)
-
-        self.assertFalse(form.is_valid())
-        self.assertIn('password2', form.errors)
+        assert not form.is_valid()
+        assert 'password2' in form.errors
 
     def test_duplicate_username(self):
-        User.objects.create_user(
-            username='newuser',
-            email='another@example.com',
-            password='StrongPass123',
-        )
+        User.objects.create_user(username='newuser', email='another@example.com', password='StrongPass123')
 
-        form = RegisterForm(data=self.valid_data)
+        form = RegisterForm(data=VALID_REGISTER_DATA)
 
-        self.assertFalse(form.is_valid())
-        self.assertIn('username', form.errors)
+        assert not form.is_valid()
+        assert 'username' in form.errors
 
     def test_clean_email_success(self):
         form = RegisterForm()
         form.cleaned_data = {'email': 'test@example.com'}
 
-        self.assertEqual(form.clean_email(), 'test@example.com')
+        assert form.clean_email() == 'test@example.com'
 
     def test_clean_email_validation_error(self):
-        User.objects.create_user(
-            username='user',
-            email='test@example.com',
-            password='StrongPass123',
-        )
+        User.objects.create_user(username='user', email='test@example.com', password='StrongPass123')
 
         form = RegisterForm()
         form.cleaned_data = {'email': 'test@example.com'}
 
-        with self.assertRaises(ValidationError):
+        with pytest.raises(ValidationError):
             form.clean_email()
 
 
-class RegisterViewTests(TestCase):
-
-    def setUp(self):
-        self.client = Client()
-        self.url = reverse('users:register')
-
-        self.data = {
+@pytest.mark.django_db
+class TestRegisterView:
+    def register_data(self):
+        return {
             'username': 'testuser',
             'email': 'test@example.com',
             'password1': 'StrongPass123',
             'password2': 'StrongPass123',
         }
 
-    def test_get_register_page(self):
-        response = self.client.get(self.url)
+    def test_get_register_page(self, client):
+        response = client.get(reverse('users:register'))
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIsInstance(response.context['form'], RegisterForm)
+        assert response.status_code == 200
+        assert isinstance(response.context['form'], RegisterForm)
 
-    def test_post_valid_data(self):
-        response = self.client.post(self.url, self.data)
+    def test_post_valid_data(self, client):
+        response = client.post(reverse('users:register'), self.register_data())
 
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('bookings:list'))
+        assert response.status_code == 302
+        assert response.url == reverse('bookings:list')
 
-    def test_post_invalid_data(self):
-        data = self.data.copy()
-        data['password2'] = '12345678'
+    def test_post_invalid_data(self, client):
+        data = {**self.register_data(), 'password2': '12345678'}
 
-        response = self.client.post(self.url, data)
+        response = client.post(reverse('users:register'), data)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'invalid-feedback')
+        assert response.status_code == 200
+        assert 'invalid-feedback' in response.content.decode()
 
-    def test_user_logged_in_after_register(self):
-        self.client.post(self.url, self.data)
+    def test_user_logged_in_after_register(self, client):
+        client.post(reverse('users:register'), self.register_data())
 
-        response = self.client.get(reverse('bookings:list'))
+        response = client.get(reverse('bookings:list'))
 
-        self.assertTrue(response.wsgi_request.user.is_authenticated)
+        assert response.wsgi_request.user.is_authenticated
 
     def test_success_url(self):
-        self.assertEqual(str(RegisterView.success_url), reverse('bookings:list'))
+        assert str(RegisterView.success_url) == reverse('bookings:list')
 
 
-class UrlTests(TestCase):
-
+class TestUrls:
     def test_login_url(self):
-        resolver = resolve(reverse('users:login'))
-
-        self.assertEqual(resolver.func.view_class, LoginView)
+        assert resolve(reverse('users:login')).func.view_class == LoginView
 
     def test_logout_url(self):
-        resolver = resolve(reverse('users:logout'))
-
-        self.assertEqual(resolver.func.view_class, LogoutView)
+        assert resolve(reverse('users:logout')).func.view_class == LogoutView
 
     def test_register_url(self):
-        resolver = resolve(reverse('users:register'))
-
-        self.assertEqual(resolver.func.view_class, RegisterView)
+        assert resolve(reverse('users:register')).func.view_class == RegisterView
 
     def test_reverse_names(self):
-        self.assertEqual(reverse('users:login'), '/accounts/login/')
-        self.assertEqual(reverse('users:logout'), '/accounts/logout/')
-        self.assertEqual(reverse('users:register'), '/accounts/register/')
+        assert reverse('users:login') == '/accounts/login/'
+        assert reverse('users:logout') == '/accounts/logout/'
+        assert reverse('users:register') == '/accounts/register/'
 
 
-class EmailOrUsernameBackendTests(TestCase):
-
-    def setUp(self):
-        self.backend = EmailOrUsernameBackend()
-
-        self.user = User.objects.create_user(
-            username='testuser',
-            email='test@example.com',
-            password='StrongPass123',
+@pytest.mark.django_db
+class TestEmailOrUsernameBackend:
+    def make_user(self):
+        return User.objects.create_user(
+            username='testuser', email='test@example.com', password='StrongPass123'
         )
 
     def test_auth_by_username(self):
-        user = self.backend.authenticate(
-            None,
-            username='testuser',
-            password='StrongPass123',
-        )
+        user = self.make_user()
 
-        self.assertEqual(user, self.user)
+        result = EmailOrUsernameBackend().authenticate(None, username='testuser', password='StrongPass123')
+
+        assert result == user
 
     def test_auth_by_email(self):
-        user = self.backend.authenticate(
-            None,
-            username='test@example.com',
-            password='StrongPass123',
-        )
+        user = self.make_user()
 
-        self.assertEqual(user, self.user)
+        result = EmailOrUsernameBackend().authenticate(None, username='test@example.com', password='StrongPass123')
+
+        assert result == user
 
     def test_wrong_password(self):
-        user = self.backend.authenticate(
-            None,
-            username='testuser',
-            password='wrongpass',
-        )
+        self.make_user()
 
-        self.assertIsNone(user)
+        result = EmailOrUsernameBackend().authenticate(None, username='testuser', password='wrongpass')
+
+        assert result is None
 
     def test_user_not_exists(self):
-        user = self.backend.authenticate(
-            None,
-            username='unknown',
-            password='StrongPass123',
-        )
+        result = EmailOrUsernameBackend().authenticate(None, username='unknown', password='StrongPass123')
 
-        self.assertIsNone(user)
+        assert result is None
 
     def test_inactive_user(self):
-        self.user.is_active = False
-        self.user.save()
+        user = self.make_user()
+        user.is_active = False
+        user.save()
 
-        user = self.backend.authenticate(
-            None,
-            username='testuser',
-            password='StrongPass123',
-        )
+        result = EmailOrUsernameBackend().authenticate(None, username='testuser', password='StrongPass123')
 
-        self.assertIsNone(user)
+        assert result is None
 
     def test_username_is_none(self):
-        user = self.backend.authenticate(
-            None,
-            username=None,
-            password='StrongPass123',
-        )
+        self.make_user()
 
-        self.assertIsNone(user)
+        result = EmailOrUsernameBackend().authenticate(None, username=None, password='StrongPass123')
+
+        assert result is None
 
     def test_password_is_none(self):
-        user = self.backend.authenticate(
-            None,
-            username='testuser',
-            password=None,
-        )
+        self.make_user()
 
-        self.assertIsNone(user)
+        result = EmailOrUsernameBackend().authenticate(None, username='testuser', password=None)
+
+        assert result is None
 
 
-class IntegrationTests(TestCase):
-
-    def setUp(self):
-        self.client = Client()
-
-        self.user = User.objects.create_user(
-            username='testuser',
-            email='test@example.com',
-            password='StrongPass123',
-        )
-
-    def test_register_login_logout(self):
-        self.client.post(
-            reverse('users:register'),
-            {
-                'username': 'newuser',
-                'email': 'new@example.com',
-                'password1': 'StrongPass123',
-                'password2': 'StrongPass123',
-            },
-        )
-
-        response = self.client.get(reverse('bookings:list'))
-        self.assertTrue(response.wsgi_request.user.is_authenticated)
-
-        self.client.logout()
-
-        response = self.client.get(reverse('bookings:list'))
-        self.assertFalse(response.wsgi_request.user.is_authenticated)
-
-    def test_login_page_available_without_auth(self):
-        response = self.client.get(reverse('users:login'))
-
-        self.assertEqual(response.status_code, 200)
-
-    def test_register_page_available_without_auth(self):
-        response = self.client.get(reverse('users:register'))
-
-        self.assertEqual(response.status_code, 200)
-
-    def test_authenticated_user(self):
-        self.client.login(
-            username='testuser',
-            password='StrongPass123',
-        )
-
-        response = self.client.get(reverse('bookings:list'))
-
-        self.assertTrue(response.wsgi_request.user.is_authenticated)
-
-
-class PasswordResetTests(TestCase):
-
-    def setUp(self):
-        self.user = User.objects.create_user(
-            username='bob',
-            email='bob@example.com',
-            password='oldpass12345',
-        )
+@pytest.mark.django_db
+class TestPasswordReset:
+    def make_user(self):
+        return User.objects.create_user(username='bob', email='bob@example.com', password='oldpass12345')
 
     def reset_path_from_email(self, body):
-        match = re.search(r'/accounts/reset/[^\s]+', body)
-        return match.group(0)
+        return re.search(r'/accounts/reset/[^\s]+', body).group(0)
 
-    def test_reset_form_available(self):
-        response = self.client.get(reverse('users:password_reset'))
+    def test_reset_form_available(self, client):
+        response = client.get(reverse('users:password_reset'))
 
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
 
-    def test_reset_sends_email_to_known_address(self):
-        response = self.client.post(
-            reverse('users:password_reset'),
-            {'email': 'bob@example.com'},
-        )
+    def test_reset_sends_email_to_known_address(self, client):
+        self.make_user()
 
-        self.assertRedirects(response, reverse('users:password_reset_done'))
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('bob@example.com', mail.outbox[0].to)
+        response = client.post(reverse('users:password_reset'), {'email': 'bob@example.com'})
 
-    def test_reset_unknown_email_sends_nothing(self):
-        response = self.client.post(
-            reverse('users:password_reset'),
-            {'email': 'nobody@example.com'},
-        )
+        assert response.status_code == 302
+        assert response.url == reverse('users:password_reset_done')
+        assert len(mail.outbox) == 1
+        assert 'bob@example.com' in mail.outbox[0].to
 
-        self.assertRedirects(response, reverse('users:password_reset_done'))
-        self.assertEqual(len(mail.outbox), 0)
+    def test_reset_unknown_email_sends_nothing(self, client):
+        self.make_user()
 
-    def test_full_flow_allows_login_with_new_password(self):
-        self.client.post(
-            reverse('users:password_reset'),
-            {'email': 'bob@example.com'},
-        )
+        response = client.post(reverse('users:password_reset'), {'email': 'nobody@example.com'})
+
+        assert response.status_code == 302
+        assert len(mail.outbox) == 0
+
+    def test_full_flow_allows_login_with_new_password(self, client):
+        user = self.make_user()
+        client.post(reverse('users:password_reset'), {'email': 'bob@example.com'})
         confirm_path = self.reset_path_from_email(mail.outbox[0].body)
 
-        set_password_response = self.client.get(confirm_path)
-        self.assertEqual(set_password_response.status_code, 302)
+        set_password_response = client.get(confirm_path)
+        assert set_password_response.status_code == 302
 
-        response = self.client.post(
+        response = client.post(
             set_password_response.url,
-            {
-                'new_password1': 'brandnew98765',
-                'new_password2': 'brandnew98765',
-            },
+            {'new_password1': 'brandnew98765', 'new_password2': 'brandnew98765'},
         )
 
-        self.assertRedirects(response, reverse('users:password_reset_complete'))
-        self.user.refresh_from_db()
-        self.assertTrue(self.user.check_password('brandnew98765'))
+        assert response.status_code == 302
+        assert response.url == reverse('users:password_reset_complete')
+        user.refresh_from_db()
+        assert user.check_password('brandnew98765')

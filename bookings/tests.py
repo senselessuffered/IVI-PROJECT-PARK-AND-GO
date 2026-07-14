@@ -148,7 +148,7 @@ class TestBookingModel:
             end_time=datetime.time(17, 0),
         )
 
-        booking.clean()
+        assert booking.clean() is None
 
     def test_booking_further_than_month_ahead_is_invalid(self, user, parking_spot):
         booking = Booking(
@@ -166,78 +166,46 @@ class TestBookingModel:
 
 
 
-class BusyHoursTests(TestCase):
-
-    def setUp(self):
-        self.user = User.objects.create_user(
-            username='user',
-            password='testpass123',
-        )
-        self.spot = ParkingSpot.objects.create(number='A1')
-
-        self.booking = Booking.objects.create(
-            user=self.user,
-            parking_spot=self.spot,
+@pytest.mark.django_db
+class TestBusyHours:
+    def make_booking(self, user, parking_spot):
+        return Booking.objects.create(
+            user=user,
+            parking_spot=parking_spot,
             date=date(2030, 1, 1),
             start_time=time(10, 0),
             end_time=time(13, 0),
         )
 
-    def test_busy_hours(self):
-        hours = busy_hours_for(self.spot.pk, self.booking.date)
-        self.assertEqual(hours, [10, 11, 12])
+    def test_busy_hours(self, user, parking_spot):
+        booking = self.make_booking(user, parking_spot)
+        assert busy_hours_for(parking_spot.pk, booking.date) == [10, 11, 12]
 
-    def test_busy_hours_with_exclude(self):
-        hours = busy_hours_for(
-            self.spot.pk,
-            self.booking.date,
-            exclude_pk=self.booking.pk,
-        )
-        self.assertEqual(hours, [])
+    def test_busy_hours_with_exclude(self, user, parking_spot):
+        booking = self.make_booking(user, parking_spot)
+        assert busy_hours_for(parking_spot.pk, booking.date, exclude_pk=booking.pk) == []
 
-    def test_busy_hours_without_spot(self):
-        self.assertEqual(
-            busy_hours_for(None, self.booking.date),
-            [],
-        )
+    def test_busy_hours_without_spot(self, parking_spot):
+        assert busy_hours_for(None, date(2030, 1, 1)) == []
 
-    def test_busy_hours_without_date(self):
-        self.assertEqual(
-            busy_hours_for(self.spot.pk, None),
-            [],
-        )
+    def test_busy_hours_without_date(self, parking_spot):
+        assert busy_hours_for(parking_spot.pk, None) == []
 
-    @patch('bookings.views.Booking.objects.filter')
-    def test_busy_hours_value_error(self, mocked_filter):
-        mocked_filter.side_effect = ValueError
-        self.assertEqual(
-            busy_hours_for(self.spot.pk, self.booking.date),
-            [],
-        )
+    def test_busy_hours_value_error(self, parking_spot):
+        with patch('bookings.views.Booking.objects.filter', side_effect=ValueError):
+            assert busy_hours_for(parking_spot.pk, date(2030, 1, 1)) == []
 
-    @patch('bookings.views.Booking.objects.filter')
-    def test_busy_hours_type_error(self, mocked_filter):
-        mocked_filter.side_effect = TypeError
-        self.assertEqual(
-            busy_hours_for(self.spot.pk, self.booking.date),
-            [],
-        )
+    def test_busy_hours_type_error(self, parking_spot):
+        with patch('bookings.views.Booking.objects.filter', side_effect=TypeError):
+            assert busy_hours_for(parking_spot.pk, date(2030, 1, 1)) == []
 
-    @patch('bookings.views.Booking.objects.filter')
-    def test_busy_hours_validation_error(self, mocked_filter):
-        mocked_filter.side_effect = ValidationError('test')
-        self.assertEqual(
-            busy_hours_for(self.spot.pk, self.booking.date),
-            [],
-        )
+    def test_busy_hours_validation_error(self, parking_spot):
+        with patch('bookings.views.Booking.objects.filter', side_effect=ValidationError('test')):
+            assert busy_hours_for(parking_spot.pk, date(2030, 1, 1)) == []
 
-    def test_busy_hours_with_exclude_no_bookings(self):
-        hours = busy_hours_for(
-            self.spot.pk,
-            self.booking.date,
-            exclude_pk=999,
-        )
-        self.assertEqual(hours, [10, 11, 12])
+    def test_busy_hours_with_exclude_no_bookings(self, user, parking_spot):
+        booking = self.make_booking(user, parking_spot)
+        assert busy_hours_for(parking_spot.pk, booking.date, exclude_pk=999) == [10, 11, 12]
 
 
 class BookingListViewTests(TestCase):
