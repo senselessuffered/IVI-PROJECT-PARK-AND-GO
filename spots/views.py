@@ -20,7 +20,7 @@ class ParkingSpotListView(SafePaginationMixin, ListView):
     paginate_by = 5
 
     def get_queryset(self):
-        queryset = ParkingSpot.objects.all()
+        queryset = ParkingSpot.objects.order_by('number')
         query = self.request.GET.get('q')
         if query:
             queryset = queryset.filter(number__icontains=query)

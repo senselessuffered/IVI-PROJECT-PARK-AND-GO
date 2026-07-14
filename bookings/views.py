@@ -168,7 +168,7 @@ class BookingCancelView(LoginRequiredMixin, View):
 
         if booking.is_active:
             booking.status = BookingStatus.CANCELLED
-            booking.save(update_fields=['status'])
+            booking.save(update_fields=['status', 'updated_at'])
 
         return redirect(
             'bookings:detail',
