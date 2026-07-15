@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "park-and-go"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "Django==6.0.6",
+    "django-environ==0.14.0",
+    "psycopg[binary]==3.3.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+    "pytest-django==4.12.0",
+    "pytest-cov==7.1.0",
+    "ruff>=0.8,<1.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["application*", "bookings*", "core*", "spots*", "users*"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "static/vendor",
+    "*/migrations/*",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"application/settings/__init__.py" = ["F403", "I001"]
+"application/settings/test.py" = ["F403"]

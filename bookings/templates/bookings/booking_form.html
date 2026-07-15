@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Редактировать бронь{% else %}Создать бронь{% endif %} — Парк-и-Гоу{% endblock %}
+
+{% block container_extra %} container-narrow{% endblock %}
+
+{% block content %}
+  {% if form.instance.pk %}
+  <a href="{% url 'bookings:detail' form.instance.pk %}" class="text-decoration-none d-inline-block mb-3">← К брони #{{ form.instance.pk }}</a>
+  {% else %}
+  <a href="{% url 'bookings:list' %}" class="text-decoration-none d-inline-block mb-3">← К списку бронирований</a>
+  {% endif %}
+
+  <div class="page-head">
+    <div>
+      {% if form.instance.pk %}
+      <h1>Редактирование брони</h1>
+      <p class="page-sub">Бронь #{{ form.instance.pk }} · место {{ form.instance.parking_spot.number }}</p>
+      {% else %}
+      <h1>Новая бронь</h1>
+      <p class="page-sub">Выберите дату, место и время парковки</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <form class="panel panel-pad" method="post">
+    {% csrf_token %}
+
+    {% include 'includes/form_errors.html' %}
+
+    <div class="mb-4">
+      <label for="{{ form.date.id_for_label }}" class="form-label fw-medium">Дата</label>
+      <input type="date" name="{{ form.date.html_name }}" id="{{ form.date.id_for_label }}" value="{{ form.date.value|default:''|stringformat:'s' }}" min="{{ min_date|date:'Y-m-d' }}" max="{{ max_date|date:'Y-m-d' }}" class="form-control{% if form.date.errors %} is-invalid{% endif %}" style="max-width:240px" required>
+      {% for error in form.date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+
+    <div class="mb-4">
+      <label for="{{ form.parking_spot.id_for_label }}" class="form-label fw-medium">Парковочное место</label>
+      <select name="{{ form.parking_spot.html_name }}" id="{{ form.parking_spot.id_for_label }}" class="form-select{% if form.parking_spot.errors %} is-invalid{% endif %}" style="max-width:320px" required>
+        {% for value, label in form.parking_spot.field.choices %}
+        <option value="{{ value }}"{% if form.parking_spot.value|stringformat:'s' == value|stringformat:'s' %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      {% for error in form.parking_spot.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-medium d-block">Время</label>
+      <div class="slot-grid" id="slotGrid" data-busy-url="{% url 'bookings:busy_hours' %}" data-free-url="{% url 'bookings:free_spots' %}" data-exclude-pk="{{ form.instance.pk|default:'' }}">
+        <button type="button" class="slot{% if busy_hours and 8 in busy_hours %} is-busy{% endif %}" data-h="8"{% if busy_hours and 8 in busy_hours %} disabled{% endif %}>08:00<small>–09:00</small></button>
+        <button type="button" class="slot{% if busy_hours and 9 in busy_hours %} is-busy{% endif %}" data-h="9"{% if busy_hours and 9 in busy_hours %} disabled{% endif %}>09:00<small>–10:00</small></button>
+        <button type="button" class="slot{% if busy_hours and 10 in busy_hours %} is-busy{% endif %}" data-h="10"{% if busy_hours and 10 in busy_hours %} disabled{% endif %}>10:00<small>–11:00</small></button>
+        <button type="button" class="slot{% if busy_hours and 11 in busy_hours %} is-busy{% endif %}" data-h="11"{% if busy_hours and 11 in busy_hours %} disabled{% endif %}>11:00<small>–12:00</small></button>
+        <button type="button" class="slot{% if busy_hours and 12 in busy_hours %} is-busy{% endif %}" data-h="12"{% if busy_hours and 12 in busy_hours %} disabled{% endif %}>12:00<small>–13:00</small></button>
+        <button type="button" class="slot{% if busy_hours and 13 in busy_hours %} is-busy{% endif %}" data-h="13"{% if busy_hours and 13 in busy_hours %} disabled{% endif %}>13:00<small>–14:00</small></button>
+        <button type="button" class="slot{% if busy_hours and 14 in busy_hours %} is-busy{% endif %}" data-h="14"{% if busy_hours and 14 in busy_hours %} disabled{% endif %}>14:00<small>–15:00</small></button>
+        <button type="button" class="slot{% if busy_hours and 15 in busy_hours %} is-busy{% endif %}" data-h="15"{% if busy_hours and 15 in busy_hours %} disabled{% endif %}>15:00<small>–16:00</small></button>
+        <button type="button" class="slot{% if busy_hours and 16 in busy_hours %} is-busy{% endif %}" data-h="16"{% if busy_hours and 16 in busy_hours %} disabled{% endif %}>16:00<small>–17:00</small></button>
+        <button type="button" class="slot{% if busy_hours and 17 in busy_hours %} is-busy{% endif %}" data-h="17"{% if busy_hours and 17 in busy_hours %} disabled{% endif %}>17:00<small>–18:00</small></button>
+        <button type="button" class="slot{% if busy_hours and 18 in busy_hours %} is-busy{% endif %}" data-h="18"{% if busy_hours and 18 in busy_hours %} disabled{% endif %}>18:00<small>–19:00</small></button>
+        <button type="button" class="slot{% if busy_hours and 19 in busy_hours %} is-busy{% endif %}" data-h="19"{% if busy_hours and 19 in busy_hours %} disabled{% endif %}>19:00<small>–20:00</small></button>
+        <button type="button" class="slot{% if busy_hours and 20 in busy_hours %} is-busy{% endif %}" data-h="20"{% if busy_hours and 20 in busy_hours %} disabled{% endif %}>20:00<small>–21:00</small></button>
+        <button type="button" class="slot{% if busy_hours and 21 in busy_hours %} is-busy{% endif %}" data-h="21"{% if busy_hours and 21 in busy_hours %} disabled{% endif %}>21:00<small>–22:00</small></button>
+      </div>
+      {% if form.start_time.errors or form.end_time.errors %}<div class="invalid-feedback d-block">Выберите время в сетке слотов.</div>{% endif %}
+    </div>
+
+    <input type="hidden" name="{{ form.start_time.html_name }}" value="{{ form.start_time.value|default:''|stringformat:'s' }}">
+    <input type="hidden" name="{{ form.end_time.html_name }}" value="{{ form.end_time.value|default:''|stringformat:'s' }}">
+
+    <div class="slot-summary mb-3" id="slotSummary"><span class="ss-empty">Время не выбрано</span></div>
+
+    <div class="limit-hint mb-4">
+      Ограничения: не более <strong>8 часов</strong> в день и <strong>16 часов</strong> в неделю.
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 action-row">
+      <button type="submit" class="btn btn-primary">{% if form.instance.pk %}Сохранить изменения{% else %}Создать бронь{% endif %}</button>
+      <a href="{% if form.instance.pk %}{% url 'bookings:detail' form.instance.pk %}{% else %}{% url 'bookings:list' %}{% endif %}" class="btn btn-outline-secondary">Отмена</a>
+    </div>
+
+  </form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/booking-slots.js' %}"></script>
+{% endblock %}

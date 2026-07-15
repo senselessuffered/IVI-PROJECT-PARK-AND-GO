@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Бронь {{ booking.parking_spot.number }} — Парк-и-Гоу{% endblock %}
+
+{% block container_extra %} container-narrow{% endblock %}
+
+{% block content %}
+  <a href="{% url 'bookings:list' %}" class="text-decoration-none d-inline-block mb-3">← К списку бронирований</a>
+
+  <div class="page-head">
+    <div>
+      <h1 class="d-flex align-items-center gap-3">
+        Бронь #{{ booking.pk }}
+        {% include 'bookings/_status_badge.html' %}
+      </h1>
+      <p class="page-sub">Создана {{ booking.created_at|date:'j E Y' }}</p>
+    </div>
+  </div>
+
+  <div class="panel panel-pad mb-4">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <span class="brand-mark" style="width:48px;height:48px;font-size:1.2rem;border-radius:10px">P</span>
+      <div>
+        <div class="detail-spot">{{ booking.parking_spot.number }}</div>
+        {% if booking.parking_spot.description %}<div class="text-muted-2">{{ booking.parking_spot.description }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="detail-list">
+      <div class="row-item"><span class="dl-label">Дата</span><span class="dl-value">{{ booking.date|date:'j E Y, l' }}</span></div>
+      <div class="row-item"><span class="dl-label">Время</span><span class="dl-value">{{ booking.start_time|time:'H:i' }}–{{ booking.end_time|time:'H:i' }}</span></div>
+      <div class="row-item"><span class="dl-label">Длительность</span><span class="dl-value">{{ booking.duration_hours }} ч</span></div>
+      <div class="row-item"><span class="dl-label">Статус</span><span class="dl-value">{% include 'bookings/_status_badge.html' %}</span></div>
+      <div class="row-item"><span class="dl-label">Кто создал</span><span class="dl-value">{{ booking.user.get_full_name|default:booking.user.username }}</span></div>
+    </div>
+  </div>
+
+  {% if request.user == booking.user %}
+  <div class="d-flex flex-wrap gap-2 action-row">
+    {% if booking.is_active %}
+    <a href="{% url 'bookings:edit' booking.pk %}" class="btn btn-primary">Редактировать</a>
+    <form method="post" action="{% url 'bookings:cancel' booking.pk %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-secondary">Отменить бронь</button>
+    </form>
+    {% endif %}
+    <form method="post" 
+          action="{% url 'bookings:delete' booking.pk %}"
+          class="ms-md-auto"
+          onsubmit="return confirm('Удалить бронь?');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-danger">Удалить</button>
+    </form>
+  </div>
+  {% endif %}
+{% endblock %}

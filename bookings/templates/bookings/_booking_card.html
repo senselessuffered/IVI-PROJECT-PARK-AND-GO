@@ -1,0 +1,8 @@
+<a href="{% url 'bookings:detail' booking.pk %}" class="booking-card">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <span class="bc-spot">{{ booking.parking_spot.number }}</span>
+    {% include 'bookings/_status_badge.html' %}
+  </div>
+  <div class="bc-row"><span class="bc-label">Дата</span><span>{{ booking.date|date:'j E Y' }}</span></div>
+  <div class="bc-row"><span class="bc-label">Время</span><span>{{ booking.start_time|time:'H:i' }}–{{ booking.end_time|time:'H:i' }} · {{ booking.duration_hours }} ч</span></div>
+</a>
